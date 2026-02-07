@@ -257,11 +257,47 @@ interface ChatPageProps {
   onNavigateRepository: () => void;
 }
 
+// Alert Modal Component
+function CardReadyAlert({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        className="bg-white rounded-[24px] shadow-lg p-8 max-w-[280px] text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="font-['Itim',sans-serif] text-[24px] text-black mb-2">
+          Your Joy Formula
+        </h2>
+        <h2 className="font-['Itim',sans-serif] text-[24px] text-black mb-6">
+          is Ready!
+        </h2>
+        
+        <button
+          onClick={onClose}
+          className="w-full bg-[#a9d66a] hover:bg-[#98c655] active:bg-[#8bb547] transition-colors rounded-[12px] px-6 py-3 font-['Istok_Web:Bold',sans-serif] text-[14px] text-black"
+        >
+          Back to Home
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigateRepository }: ChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showCardAlert, setShowCardAlert] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -329,7 +365,7 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
       // 如果对话完成并生成了卡片，显示提示
       if (response.is_complete && response.card_data) {
         console.log('Joy card generated:', response.card_data);
-        // 可以在这里添加通知或跳转到卡片详情页
+        setShowCardAlert(true);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -345,11 +381,21 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
     }
   };
 
+  const handleAlertClose = () => {
+    setShowCardAlert(false);
+    onNavigateHome();
+  };
+
   return (
     <div className="bg-white relative h-[852px] w-[393px]">
       <Frame2 />
       
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[158.18px] not-italic text-[#a1a1a1] text-[12.23px] top-[137.79px]">Feb 6th, 2026</p>
+      
+      {/* Card Ready Alert */}
+      <AnimatePresence>
+        {showCardAlert && <CardReadyAlert onClose={handleAlertClose} />}
+      </AnimatePresence>
       
       {/* Messages Container */}
       <div className="absolute left-0 right-0 top-[160px] bottom-[150px] overflow-y-auto px-4">

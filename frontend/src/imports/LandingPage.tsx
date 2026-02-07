@@ -7,9 +7,9 @@ function Frame() {
       <div className="absolute inset-[-11.47%_-16.67%]">
         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.1676 18.9861">
           <g id="Frame 67">
-            <path d="M1.77132 1.77083V7.67361" id="Vector 3" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3.54167" />
-            <path d="M12.3963 1.77083V7.67361" id="Vector 4" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3.54167" />
-            <path d={svgPaths.p30ac7800} id="Vector 5" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3.54167" />
+            <path d="M1.77132 1.77083V7.67361" id="Vector 3" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3" />
+            <path d="M12.3963 1.77083V7.67361" id="Vector 4" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3" />
+            <path d={svgPaths.p30ac7800} id="Vector 5" stroke="var(--stroke-0, #2B2A2A)" strokeLinecap="round" strokeWidth="3" />
           </g>
         </svg>
       </div>

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { MessageCircle, FileText, Smile, BarChart3, Settings } from 'lucide-react';
 import HeatmapVector from '../imports/Vector';
 import JoyrepoTitle from '../imports/Joyrepo';
-import { cardsApi } from '../api';
-import type { JoyCard } from '../types';
+import { cardsApi, insightsApi } from '../api';
+import type { JoyCard, JoyInsight } from '../types';
 
 // Circular puzzle piece component
 interface PuzzlePieceProps {
@@ -54,6 +54,38 @@ function FormulaCard({ date }: FormulaCardProps) {
         <CircularPuzzlePiece color="#B8E986" label="Senses" percentage="36%" />
         <CircularPuzzlePiece color="#D4D4D4" label="Trigger" percentage="12%" />
       </div>
+    </div>
+  );
+}
+
+// Theorem Card Component
+interface TheoremCardProps {
+  insight: JoyInsight;
+}
+
+function TheoremCard({ insight }: TheoremCardProps) {
+  return (
+    <div className="bg-[#a9d66a] rounded-[16px] shadow-[0px_2px_8px_rgba(0,0,0,0.15)] p-5 mb-4 mx-4 relative">
+      <div className="flex items-start justify-between mb-3">
+        <span className="bg-white/30 text-[#2b2a2a] text-[9px] font-['Istok_Web:Bold',sans-serif] px-3 py-1 rounded-full">
+          {insight.pattern_type || 'Joy Pattern'}
+        </span>
+        <span className="text-[9px] font-['Istok_Web:Regular',sans-serif] text-[#2b2a2a]/70">
+          {new Date(insight.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        </span>
+      </div>
+      
+      <p className="font-['Itim',sans-serif] text-[14px] leading-[1.5] text-[#2b2a2a] mb-3">
+        "{insight.insight_text}"
+      </p>
+      
+      {insight.evidence_cards && insight.evidence_cards.length > 0 && (
+        <div className="pt-2 border-t border-[#2b2a2a]/10">
+          <p className="text-[8px] font-['Istok_Web:Regular',sans-serif] text-[#2b2a2a]/70">
+            Based on {insight.evidence_cards.length} joy card{insight.evidence_cards.length > 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -122,7 +154,9 @@ interface NewRepositoryPageProps {
 export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, onNavigateHome }: NewRepositoryPageProps) {
   const [activeTab, setActiveTab] = useState<'formula' | 'theorem'>('formula');
   const [cards, setCards] = useState<JoyCard[]>([]);
+  const [insights, setInsights] = useState<JoyInsight[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(true);
 
   // 获取卡片列表
   useEffect(() => {
@@ -138,6 +172,22 @@ export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, o
     };
 
     fetchCards();
+  }, []);
+
+  // 获取 theorem 列表
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const data = await insightsApi.getInsights();
+        setInsights(data);
+      } catch (error) {
+        console.error('Failed to fetch insights:', error);
+      } finally {
+        setIsLoadingInsights(false);
+      }
+    };
+
+    fetchInsights();
   }, []);
 
   return (
@@ -206,10 +256,28 @@ export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, o
 
           {/* Theorem Tab Content */}
           {activeTab === 'theorem' && (
-            <div className="flex items-center justify-center h-full">
-              <p className="font-['Istok_Web:Regular',sans-serif] text-[16px] text-[#999]">
-                Theorem view coming soon...
-              </p>
+            <div className="pt-4 pb-6 h-full">
+              {isLoadingInsights ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#999]">Loading theorems...</p>
+                </div>
+              ) : insights.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full px-8">
+                  <p className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#666] mb-2 text-center">
+                    No Joy Theorems Yet
+                  </p>
+                  <p className="font-['Istok_Web:Regular',sans-serif] text-[12px] text-[#999] text-center">
+                    Collect at least 5 joy cards, then visit the Theorem page to generate insights
+                  </p>
+                </div>
+              ) : (
+                insights.map((insight) => (
+                  <TheoremCard 
+                    key={insight.id} 
+                    insight={insight}
+                  />
+                ))
+              )}
             </div>
           )}
         </div>

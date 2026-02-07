@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from "../imports/svg-bb8qo2f75h";
 import svgPaths2 from "../imports/svg-qg7g61fb9c";
@@ -8,6 +8,10 @@ import imgImage12 from "figma:asset/481ec9271992b35c78654813354c17a1bbe7b8b3.png
 import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png";
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
 import imgImage9 from "figma:asset/f232edc536b9310bdca4bcd53c1aee8a1be5c1d1.png";
+import joyFormulaPng from "../assets/joyframe.png";
+import joyBlindBoxPng from "../assets/joyblindbox.png";
+import { insightsApi } from '../api';
+import type { JoyInsight } from '../types';
 
 type CardType = 'scene' | 'people' | 'trigger' | 'senses' | 'feeling' | null;
 
@@ -83,15 +87,17 @@ function TheoremCardFrame() {
   );
 }
 
-function TheoremCardNotification() {
+function TheoremCardNotification({ count }: { count: number }) {
+  if (count === 0) return null;
+  
   return (
     <div className="absolute bg-[#f0817f] content-stretch flex flex-col items-center justify-center left-[54.63px] px-[4.892px] py-[1.631px] rounded-[6.93px] size-[13.861px] top-[1.63px]">
-      <p className="font-['Itim:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[8.474px] text-white">1</p>
+      <p className="font-['Itim:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[8.474px] text-white">{count}</p>
     </div>
   );
 }
 
-function TheoremCard({ onNavigateTheorem }: { onNavigateTheorem: () => void }) {
+function TheoremCard({ onNavigateTheorem, latestInsight }: { onNavigateTheorem: () => void; latestInsight?: JoyInsight }) {
   return (
     <motion.button
       onClick={onNavigateTheorem}
@@ -118,7 +124,24 @@ function TheoremCard({ onNavigateTheorem }: { onNavigateTheorem: () => void }) {
         </div>
         <div className="absolute bg-[#e6e6e6] h-[46.753px] left-[4.6px] rounded-[2.122px] shadow-[0px_0.849px_0.849px_0px_rgba(0,0,0,0.25)] top-[6.38px] w-[60.46px]" />
         <TheoremCardFrame />
-        <TheoremCardNotification />
+        <TheoremCardNotification count={latestInsight ? 1 : 0} />
+        
+        {/* Preview text overlay */}
+        {latestInsight && (
+          <div 
+            className="absolute bg-white rounded-md px-1 py-0.5"
+            style={{ bottom: '8px', left: '8px', right: '8px', opacity: 0.95 }}
+          >
+            <p className="font-['Itim',sans-serif] text-[5px] text-black text-center overflow-hidden" style={{ 
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: '1.2'
+            }}>
+              {latestInsight.insight_text}
+            </p>
+          </div>
+        )}
       </div>
     </motion.button>
   );
@@ -127,8 +150,8 @@ function TheoremCard({ onNavigateTheorem }: { onNavigateTheorem: () => void }) {
 // Gift Box Component
 function GiftBoxFrame() {
   return (
-    <div className="h-[3.981px] relative w-[26.351px]">
-      <p className="-translate-x-1/2 absolute font-['Itim:Regular',sans-serif] leading-none left-[13.18px] not-italic text-[#a28f7e] text-[3.981px] text-center top-0 w-[26.351px] whitespace-pre-wrap">JOYBLINDBOX</p>
+    <div className="h-[3.981px] relative w-[26.351px] flex items-center justify-center">
+      <img src={joyBlindBoxPng} alt="Joy Blind Box" className="w-full h-auto object-contain" />
       <div className="absolute h-[0.431px] left-[3.19px] top-[1.59px] w-0">
         <div className="absolute inset-[-30%_-0.13px]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 0.258736 0.689962">
@@ -230,7 +253,18 @@ function GiftBox({ onNavigateGiftBox }: { onNavigateGiftBox?: () => void }) {
   );
 }
 
-function Frame14() {
+function Frame14({ latestInsight }: { latestInsight?: JoyInsight | null }) {
+  if (!latestInsight) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="absolute bg-white h-[141.056px] left-[35.88px] overflow-clip rounded-bl-[14.754px] rounded-br-[14.754px] shadow-[2.951px_2.951px_14.754px_1.475px_rgba(191,172,89,0.25)] top-[481.06px] w-[329.402px]"
+      />
+    );
+  }
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -240,7 +274,7 @@ function Frame14() {
     >
       <p className="absolute font-['Istok_Web:Bold',sans-serif] h-[19.918px] left-[20.38px] text-[#f90] text-[29.508px] top-[24.46px] w-[13.279px]">"</p>
       <p className="absolute font-['Istok_Web:Bold',sans-serif] h-[22.131px] left-[290.27px] text-[#f90] text-[29.508px] top-[75.83px] w-[18.443px]">"</p>
-      <p className="-translate-x-1/2 absolute font-['Itim:Regular',sans-serif] left-[164.55px] text-[#3a3a3a] text-[14.754px] text-center top-[44.03px] w-[250.818px]">A quiet room, a golden beam, a heart at rest. Today, the light reminded me that I am enough.</p>
+      <p className="-translate-x-1/2 absolute font-['Itim:Regular',sans-serif] left-[164.55px] text-[#3a3a3a] text-[14.754px] text-center top-[44.03px] w-[250.818px]">{latestInsight.insight_text}</p>
     </motion.div>
   );
 }
@@ -675,15 +709,9 @@ function Frame2() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="absolute h-[48.882px] left-[69.3px] top-[38.32px] w-[262.544px]"
+      className="absolute left-[69.3px] top-[38.32px] w-[262.544px] h-[48.882px]"
     >
-      <p className="absolute font-['Itim:Regular',sans-serif] leading-[normal] left-0 not-italic text-[#2b2a2a] text-[41.063px] top-0">JOYFORMULA</p>
-      <Frame />
-      <div className="absolute flex h-[12.624px] items-center justify-center left-[104.86px] top-[19.71px] w-[7.483px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "153.5" } as React.CSSProperties}>
-        <div className="flex-none rotate-[-179.58deg]">
-          <Frame1 />
-        </div>
-      </div>
+      <img src={joyFormulaPng} alt="Joy Formula" className="w-full h-full object-contain" />
     </motion.div>
   );
 }
@@ -789,6 +817,23 @@ function Component1({ onNavigateChat, onNavigateTheorem, onNavigateRepository }:
       <Frame15 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
     </div>
   );
+  const [latestInsight, setLatestInsight] = useState<JoyInsight | null>(null);
+
+  // 获取最新的 theorem
+  useEffect(() => {
+    const fetchLatestInsight = async () => {
+      try {
+        const insights = await insightsApi.getInsights();
+        if (insights.length > 0) {
+          setLatestInsight(insights[0]); // 取最新的一个
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest insight:', error);
+      }
+    };
+
+    fetchLatestInsight();
+  }, []);
 }
 
 interface HomePageProps {
@@ -800,10 +845,27 @@ interface HomePageProps {
 
 export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigateRepository, onNavigateGiftBox }: HomePageProps) {
   const [selectedCard, setSelectedCard] = useState<CardType>(null);
+  const [latestInsight, setLatestInsight] = useState<JoyInsight | null>(null);
+
+  // 获取最新的 theorem
+  useEffect(() => {
+    const fetchLatestInsight = async () => {
+      try {
+        const insights = await insightsApi.getInsights();
+        if (insights.length > 0) {
+          setLatestInsight(insights[0]); // 取最新的一个
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest insight:', error);
+      }
+    };
+
+    fetchLatestInsight();
+  }, []);
 
   return (
     <div className="relative size-full" data-name="主页：快乐公式展示" style={{ backgroundImage: "linear-gradient(rgba(90, 122, 205, 0.2) 19.712%, rgba(255, 162, 162, 0.2) 44.231%, rgba(90, 156, 181, 0.2) 75.962%, rgba(254, 176, 93, 0.2) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }}>
-      <Frame14 />
+      <Frame14 latestInsight={latestInsight} />
       <Frame17 onNavigateChat={onNavigateChat} />
       <p className="absolute font-['Istok_Web:Regular',sans-serif] h-[25.276px] leading-[normal] left-[261.73px] not-italic text-[16.307px] text-black top-[142.69px] w-[102.734px] whitespace-pre-wrap">Feb 6th, 2026</p>
       <Frame8 />
@@ -818,8 +880,6 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
       <Frame12 onClick={() => setSelectedCard('trigger')} />
       <Frame13 onClick={() => setSelectedCard('senses')} />
       <Frame20 onClick={() => setSelectedCard('feeling')} />
-      
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[256.02px] not-italic text-[8.154px] text-black top-[163.89px] w-[107.627px] whitespace-pre-wrap">This is your 96th JoyFormula.</p>
       
       {/* Theorem Card and Gift Box */}
       <TheoremCard onNavigateTheorem={onNavigateTheorem} />
