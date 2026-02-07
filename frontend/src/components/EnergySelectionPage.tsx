@@ -3,6 +3,8 @@ import svgPaths from "../imports/svg-iurkbxnnb8";
 import imgImage12 from "figma:asset/481ec9271992b35c78654813354c17a1bbe7b8b3.png";
 import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png";
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
+import { explorationApi } from '../api';
+import type { Recommendation } from '../types';
 
 function Frame() {
   return (
@@ -117,12 +119,13 @@ interface EnergySelectionPageProps {
   onNavigateChat: () => void;
   onNavigateTheorem: () => void;
   onNavigateHome: () => void;
-  onContinue: (energyLevel: number) => void;
+  onContinue: (energyLevel: number, recommendations: Recommendation[]) => void;
 }
 
 export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem, onNavigateHome, onContinue }: EnergySelectionPageProps) {
   const [energyLevel, setEnergyLevel] = useState(20);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
 
   const getEnergyColor = (level: number) => {
@@ -167,8 +170,18 @@ export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem,
     return () => window.removeEventListener('pointerup', handleGlobalPointerUp);
   }, []);
 
-  const handleContinue = () => {
-    onContinue(energyLevel);
+  const handleContinue = async () => {
+    setIsLoading(true);
+    try {
+      const response = await explorationApi.getRecommendations(energyLevel);
+      onContinue(energyLevel, response.recommendations);
+    } catch (error) {
+      console.error('Failed to get recommendations:', error);
+      // 如果API失败，传递空数组
+      onContinue(energyLevel, []);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

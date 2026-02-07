@@ -6,11 +6,14 @@ import imgImage5 from "figma:asset/5e23b583e6ceb3250bf5714b464a5fc90e5eba62.png"
 import imgImage12 from "figma:asset/481ec9271992b35c78654813354c17a1bbe7b8b3.png";
 import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png";
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
+import { chatApi } from '../api';
+import type { JoyCardData } from '../types';
 
 interface Message {
   type: 'ai' | 'user';
   text: string;
   time: string;
+  card?: JoyCardData;
 }
 
 function Frame() {
@@ -255,18 +258,10 @@ interface ChatPageProps {
 }
 
 export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigateRepository }: ChatPageProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      type: 'ai',
-      text: '"Hello! I\'m your Happiness Coach. Whenever you experience a moment of joy, feel free to tell me via voice message. I\'ll help you crack the code behind that happiness."',
-      time: '17:05'
-    },
-    {
-      type: 'user',
-      text: '"I was at a cafe this afternoon and the sunlight was streaming through the window onto my book. It was so quiet—I felt incredibly relaxed and happy."',
-      time: '17:05'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -278,34 +273,74 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (text: string, isVoice: boolean) => {
+  // 初始化对话
+  useEffect(() => {
+    const initChat = async () => {
+      try {
+        const response = await chatApi.startChat();
+        setSessionId(response.session_id);
+        setMessages([{
+          type: 'ai',
+          text: response.initial_message,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } catch (error) {
+        console.error('Failed to start chat:', error);
+        // 如果API调用失败，使用默认消息
+        setMessages([{
+          type: 'ai',
+          text: "Hello! I'm your Happiness Coach. Tell me about a moment that made you happy today.",
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initChat();
+  }, []);
+
+  const handleSubmit = async (text: string, isVoice: boolean) => {
+    if (!sessionId || isLoading) return;
+
     const newUserMessage: Message = {
       type: 'user',
-      text: `"${text}"`,
+      text: text,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     
     setMessages(prev => [...prev, newUserMessage]);
+    setIsLoading(true);
 
-    setTimeout(() => {
-      const aiResponses = [
-        "That sounds wonderful! Can you describe what you were reading? And what did the sunlight feel like on your skin?",
-        "How peaceful! What made this moment different from other quiet moments you've experienced?",
-        "I love that! Was there a particular smell or sound that stood out to you?",
-        "That's beautiful. Were you alone, or was someone there with you?",
-        "Interesting! Can you tell me more about the atmosphere in that moment?"
-      ];
-      
-      const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+    try {
+      const response = await chatApi.sendMessage(sessionId, text);
       
       const aiMessage: Message = {
         type: 'ai',
-        text: `"${randomResponse}"`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: response.ai_response,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        card: response.card
       };
       
       setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+
+      // 如果对话完成并生成了卡片，显示提示
+      if (response.is_complete && response.card) {
+        console.log('Joy card generated:', response.card);
+        // 可以在这里添加通知或跳转到卡片详情页
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // 错误时显示错误消息
+      const errorMessage: Message = {
+        type: 'ai',
+        text: "Sorry, I encountered an error. Please try again.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

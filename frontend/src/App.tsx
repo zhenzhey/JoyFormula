@@ -8,10 +8,12 @@ import TheoremEditPage from './components/TheoremEditPage';
 import EnergySelectionPage from './components/EnergySelectionPage';
 import BoxOpeningPage from './components/BoxOpeningPage';
 import BoxRevealPage from './components/BoxRevealPage';
+import type { Recommendation } from './types';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'chat' | 'home' | 'repository' | 'theorem' | 'theoremEdit' | 'energySelection' | 'boxOpening' | 'boxReveal'>('home');
   const [energyLevel, setEnergyLevel] = useState(50);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -128,8 +130,9 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
-              onContinue={(level) => {
+              onContinue={(level, recs) => {
                 setEnergyLevel(level);
+                setRecommendations(recs);
                 setCurrentPage('boxOpening');
               }}
             />
@@ -171,6 +174,7 @@ export default function App() {
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
               energyLevel={energyLevel}
+              recommendations={recommendations}
             />
           </motion.div>
         )}

@@ -1,7 +1,10 @@
+import { useState, useEffect } from 'react';
 import svgPaths from "../imports/svg-svkz6eqmyl";
 import imgImage12 from "figma:asset/481ec9271992b35c78654813354c17a1bbe7b8b3.png";
 import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png";
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
+import { insightsApi } from '../api';
+import type { JoyInsight } from '../types';
 
 function Frame9() {
   return (
@@ -493,6 +496,42 @@ interface TheoremPageProps {
 }
 
 export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository }: TheoremPageProps) {
+  const [insights, setInsights] = useState<JoyInsight[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // 获取定律列表
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const data = await insightsApi.getInsights();
+        setInsights(data);
+      } catch (error) {
+        console.error('Failed to fetch insights:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInsights();
+  }, []);
+
+  // 生成新定律
+  const handleGenerateInsights = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await insightsApi.generateInsights();
+      setInsights(prev => [...response.insights, ...prev]);
+      alert(response.message);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to generate insights';
+      alert(errorMsg);
+      console.error('Failed to generate insights:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="bg-white relative size-full" data-name="Thereom">
       <Frame9 />

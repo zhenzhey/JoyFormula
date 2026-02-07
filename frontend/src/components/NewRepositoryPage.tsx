@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle, FileText, Smile, BarChart3, Settings } from 'lucide-react';
 import HeatmapVector from '../imports/Vector';
 import JoyrepoTitle from '../imports/Joyrepo';
+import { cardsApi } from '../api';
+import type { JoyCard } from '../types';
 
 // Circular puzzle piece component
 interface PuzzlePieceProps {
@@ -119,6 +121,24 @@ interface NewRepositoryPageProps {
 
 export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, onNavigateHome }: NewRepositoryPageProps) {
   const [activeTab, setActiveTab] = useState<'formula' | 'theorem'>('formula');
+  const [cards, setCards] = useState<JoyCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 获取卡片列表
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const response = await cardsApi.getCards(0, 20);
+        setCards(response.cards);
+      } catch (error) {
+        console.error('Failed to fetch cards:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCards();
+  }, []);
 
   return (
     <div className="relative w-[393px] h-[852px] bg-[#f5f5f5] rounded-[40px] overflow-hidden shadow-2xl">
@@ -165,11 +185,22 @@ export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, o
           {/* Formula Tab Content */}
           {activeTab === 'formula' && (
             <div className="pt-4 pb-6">
-              <FormulaCard date="Feb 6th, 2026" />
-              <FormulaCard date="Feb 7th, 2026" />
-              <FormulaCard date="Feb 8th, 2026" />
-              <FormulaCard date="Feb 9th, 2026" />
-              <FormulaCard date="Feb 10th, 2026" />
+              {isLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <p className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#999]">Loading cards...</p>
+                </div>
+              ) : cards.length === 0 ? (
+                <div className="flex items-center justify-center h-32">
+                  <p className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#999]">No joy cards yet. Start chatting to create your first one!</p>
+                </div>
+              ) : (
+                cards.map((card) => (
+                  <FormulaCard 
+                    key={card.id} 
+                    date={new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  />
+                ))
+              )}
             </div>
           )}
 
