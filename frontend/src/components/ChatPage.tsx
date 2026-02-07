@@ -55,7 +55,7 @@ function Frame5() {
 function Frame2() {
   return (
     <div className="absolute bg-[#eee] h-[112.519px] left-0 overflow-clip top-0 w-[393px]">
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[158.18px] not-italic text-[12.23px] text-black top-[88.87px]">Joy Somebody</p>
+      <p className="absolute font-['Itim',sans-serif] leading-[normal] left-[158.18px] not-italic text-[12.23px] text-black top-[88.87px]">Joy Somebody</p>
       <Frame5 />
     </div>
   );

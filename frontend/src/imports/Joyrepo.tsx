@@ -41,7 +41,7 @@ export default function Joyrepo() {
         </div>
       </div>
       <Frame />
-      <p className="absolute font-['Itim:Regular',sans-serif] leading-[normal] left-0 not-italic text-[40.768px] text-black top-0">JOYREPO</p>
+      <p className="absolute font-['Itim',sans-serif] leading-[normal] left-0 not-italic text-[40.768px] text-black top-0">JOYREPO</p>
     </div>
   );
 }
