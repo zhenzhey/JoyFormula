@@ -13,6 +13,7 @@ from app.models.chat_session import ChatSession, SessionStatus, SessionType
 from app.services.chat_service import ChatService
 from app.services.insight_service import InsightService
 from app.services.exploration_service import ExplorationService
+from app.i18n import t, set_language, get_language
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt, IntPrompt
@@ -20,6 +21,18 @@ from rich.table import Table
 from rich import print as rprint
 
 console = Console()
+
+
+def _format_card_content(card):
+    """格式化卡片内容文本"""
+    return (
+        f"[bold]{card.card_summary}[/bold]\n\n"
+        f"{t('label_scene')}: {card.formula_scene}\n"
+        f"{t('label_people')}: {card.formula_people}\n"
+        f"{t('label_event')}: {card.formula_event}\n"
+        f"{t('label_trigger')}: {card.formula_trigger}\n"
+        f"{t('label_sensation')}: {card.formula_sensation}"
+    )
 
 
 class JoyFormulaCLI:
@@ -30,23 +43,31 @@ class JoyFormulaCLI:
 
     def start(self):
         """启动CLI"""
+        # 语言选择（双语显示，任何用户都能选）
+        console.print("\n[bold]1. 中文[/bold]")
+        console.print("[bold]2. English[/bold]")
+        lang_choice = Prompt.ask("选择语言 / Choose language", choices=["1", "2"], default="1")
+        set_language("zh" if lang_choice == "1" else "en")
+
         console.print(Panel.fit(
-            "[bold cyan]🎉 欢迎使用 JoyFormula[/bold cyan]\n"
-            "[dim]基于 AI 的快乐心理健康助手[/dim]",
+            t("welcome_title"),
             border_style="cyan"
         ))
 
         # 获取或创建用户
-        user_id = Prompt.ask("\n请输入你的用户ID", default="demo_user")
+        user_id = Prompt.ask(t("prompt_user_id"), default="demo_user")
         self.user = self.db.query(User).filter(User.user_identifier == user_id).first()
 
         if not self.user:
-            self.user = User(user_identifier=user_id, display_name=f"用户_{user_id}")
+            self.user = User(
+                user_identifier=user_id,
+                display_name=t("default_display_name", user_id=user_id)
+            )
             self.db.add(self.user)
             self.db.commit()
-            console.print(f"[green]✓[/green] 创建新用户: {user_id}")
+            console.print(t("user_created", user_id=user_id))
         else:
-            console.print(f"[green]✓[/green] 欢迎回来，{self.user.display_name}!")
+            console.print(t("user_welcome_back", display_name=self.user.display_name))
 
         self.main_menu()
 
@@ -54,19 +75,20 @@ class JoyFormulaCLI:
         """主菜单"""
         while True:
             console.print("\n" + "="*50)
-            console.print("[bold]主菜单[/bold]")
-            console.print("1. 📝 创建快乐卡片（和Joy Coach聊天）")
-            console.print("2. 📚 查看我的快乐卡片")
-            console.print("3. 💡 生成快乐定律")
-            console.print("4. 🔍 查看快乐定律")
-            console.print("5. 🎁 快乐盲盒推荐")
-            console.print("6. 🔄 切换AI提供商")
-            console.print("0. 退出")
+            console.print(t("menu_title"))
+            console.print(t("menu_1"))
+            console.print(t("menu_2"))
+            console.print(t("menu_3"))
+            console.print(t("menu_4"))
+            console.print(t("menu_5"))
+            console.print(t("menu_6"))
+            console.print(t("menu_7"))
+            console.print(t("menu_0"))
 
-            choice = Prompt.ask("\n请选择", choices=["0", "1", "2", "3", "4", "5", "6"])
+            choice = Prompt.ask(t("menu_prompt"), choices=["0", "1", "2", "3", "4", "5", "6", "7"])
 
             if choice == "0":
-                console.print("[yellow]再见！希望你每天都快乐 😊[/yellow]")
+                console.print(t("menu_goodbye"))
                 break
             elif choice == "1":
                 self.create_joy_card()
@@ -80,11 +102,13 @@ class JoyFormulaCLI:
                 self.explore_joy()
             elif choice == "6":
                 self.switch_ai_provider()
+            elif choice == "7":
+                self.switch_language()
 
     def create_joy_card(self):
         """创建快乐卡片"""
-        console.print("\n[bold cyan]开始和Joy Coach对话[/bold cyan]")
-        console.print("[dim]提示：直接分享让你快乐的事，AI会引导你完善细节[/dim]\n")
+        console.print(f"\n{t('chat_start_title')}")
+        console.print(t("chat_hint"))
 
         # 创建会话
         session = ChatSession(
@@ -99,21 +123,18 @@ class JoyFormulaCLI:
         session.messages = [{"role": "assistant", "content": initial["initial_message"]}]
         self.db.commit()
 
-        console.print(f"[bold green]Joy Coach:[/bold green] {initial['initial_message']}\n")
+        console.print(f"{t('chat_joy_coach')} {initial['initial_message']}\n")
 
         # 对话循环
         draft_card = None
 
         while session.status == SessionStatus.ACTIVE:
-            user_input = Prompt.ask("[bold blue]你[/bold blue]")
+            user_input = Prompt.ask(t("chat_you"))
 
             if user_input.lower() in ['退出', 'quit', 'exit']:
-                if draft_card:
-                    session.status = SessionStatus.ABANDONED
-                else:
-                    session.status = SessionStatus.ABANDONED
+                session.status = SessionStatus.ABANDONED
                 self.db.commit()
-                console.print("[yellow]对话已结束[/yellow]")
+                console.print(t("chat_ended"))
                 break
 
             if user_input.lower() in ['完成', 'done']:
@@ -127,17 +148,12 @@ class JoyFormulaCLI:
                     self.db.commit()
                     console.print("\n" + "="*50)
                     console.print(Panel(
-                        f"[bold]{draft_card.card_summary}[/bold]\n\n"
-                        f"🎬 场景: {draft_card.formula_scene}\n"
-                        f"👥 人物: {draft_card.formula_people}\n"
-                        f"📌 事情: {draft_card.formula_event}\n"
-                        f"✨ 诱因: {draft_card.formula_trigger}\n"
-                        f"💫 感受: {draft_card.formula_sensation}",
-                        title="[bold green]✓ 快乐卡片已保存[/bold green]",
+                        _format_card_content(draft_card),
+                        title=t("card_saved_title"),
                         border_style="green"
                     ))
                 else:
-                    console.print("[yellow]还没有生成卡片，继续聊聊吧！[/yellow]")
+                    console.print(t("chat_no_card_yet"))
                     continue
                 break
 
@@ -148,7 +164,7 @@ class JoyFormulaCLI:
             session.messages = result["updated_history"]
 
             # 显示回复
-            console.print(f"\n[bold green]Joy Coach:[/bold green] {result['assistant_reply']}\n")
+            console.print(f"\n{t('chat_joy_coach')} {result['assistant_reply']}\n")
 
             # 如果检测到公式，创建/更新草稿卡片
             if result["is_complete"]:
@@ -185,20 +201,15 @@ class JoyFormulaCLI:
 
                 # 显示草稿卡片
                 console.print(Panel(
-                    f"[bold]{draft_card.card_summary}[/bold]\n\n"
-                    f"🎬 场景: {draft_card.formula_scene}\n"
-                    f"👥 人物: {draft_card.formula_people}\n"
-                    f"📌 事情: {draft_card.formula_event}\n"
-                    f"✨ 诱因: {draft_card.formula_trigger}\n"
-                    f"💫 感受: {draft_card.formula_sensation}",
-                    title="[bold yellow]📋 快乐卡片草稿[/bold yellow]",
+                    _format_card_content(draft_card),
+                    title=t("card_draft_title"),
                     border_style="yellow"
                 ))
-                console.print("[dim]你可以继续补充细节，或输入'完成'保存卡片[/dim]\n")
+                console.print(t("draft_continue_hint"))
             else:
                 self.db.commit()
 
-        Prompt.ask("\n按回车返回主菜单")
+        Prompt.ask(t("press_enter_return"))
 
     def view_cards(self):
         """查看卡片"""
@@ -207,15 +218,15 @@ class JoyFormulaCLI:
         ).order_by(JoyCard.created_at.desc()).all()
 
         if not cards:
-            console.print("[yellow]你还没有快乐卡片，去创建第一张吧！[/yellow]")
+            console.print(t("no_cards_yet"))
             return
 
-        console.print(f"\n[bold]你有 {len(cards)} 张快乐卡片[/bold]\n")
+        console.print(t("card_count_header", count=len(cards)))
 
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("#", width=3)
-        table.add_column("摘要", width=40)
-        table.add_column("创建时间", width=20)
+        table.add_column(t("col_summary"), width=40)
+        table.add_column(t("col_created_at"), width=20)
 
         for idx, card in enumerate(cards, 1):
             table.add_row(
@@ -227,34 +238,28 @@ class JoyFormulaCLI:
         console.print(table)
 
         # 查看详情
-        detail = Prompt.ask("\n输入编号查看详情（回车返回）", default="")
+        detail = Prompt.ask(t("view_detail_prompt"), default="")
         if detail.isdigit() and 1 <= int(detail) <= len(cards):
             card = cards[int(detail) - 1]
             console.print(Panel(
-                f"[bold]{card.card_summary}[/bold]\n\n"
-                f"🎬 场景: {card.formula_scene}\n"
-                f"👥 人物: {card.formula_people}\n"
-                f"📌 事情: {card.formula_event}\n"
-                f"✨ 诱因: {card.formula_trigger}\n"
-                f"💫 感受: {card.formula_sensation}\n\n"
-                f"[dim]原始记录: {card.raw_input}[/dim]",
-                title=f"[bold cyan]卡片 #{detail}[/bold cyan]",
+                _format_card_content(card) + f"\n\n[dim]{t('label_raw_input')}: {card.raw_input}[/dim]",
+                title=t("card_detail_title", num=detail),
                 border_style="cyan"
             ))
-            Prompt.ask("\n按回车继续")
+            Prompt.ask(t("press_enter_continue"))
 
     def generate_insights(self):
         """生成定律"""
         cards = self.db.query(JoyCard).filter(JoyCard.user_id == self.user.id).all()
 
         if len(cards) < 5:
-            console.print(f"[yellow]需要至少5张卡片才能生成定律，当前有{len(cards)}张[/yellow]")
+            console.print(t("min_cards_needed", count=len(cards)))
             return
 
-        console.print(f"\n[bold]基于你的 {len(cards)} 张卡片生成快乐定律...[/bold]")
+        console.print(t("generating_insights_header", count=len(cards)))
 
         try:
-            with console.status("[bold green]AI 正在分析你的快乐模式..."):
+            with console.status(t("generating_insights_status")):
                 insights_data = InsightService.generate_insights(cards)
 
             # 保存定律
@@ -269,21 +274,21 @@ class JoyFormulaCLI:
 
             self.db.commit()
 
-            console.print(f"\n[bold green]✓ 成功生成 {len(insights_data)} 条快乐定律[/bold green]\n")
+            console.print(t("insights_generated", count=len(insights_data)))
 
             # 显示定律
             for idx, insight_data in enumerate(insights_data, 1):
                 console.print(Panel(
                     f"[bold]{insight_data['insight']}[/bold]\n\n"
-                    f"[dim]模式类型: {insight_data.get('pattern_type', '未分类')}[/dim]",
-                    title=f"[bold cyan]定律 #{idx}[/bold cyan]",
+                    f"[dim]{t('label_pattern_type')}: {insight_data.get('pattern_type', t('label_uncategorized'))}[/dim]",
+                    title=t("insight_title", num=idx),
                     border_style="cyan"
                 ))
 
         except Exception as e:
-            console.print(f"[red]生成失败: {str(e)}[/red]")
+            console.print(t("generation_failed", error=str(e)))
 
-        Prompt.ask("\n按回车返回主菜单")
+        Prompt.ask(t("press_enter_return"))
 
     def view_insights(self):
         """查看快乐定律"""
@@ -292,24 +297,24 @@ class JoyFormulaCLI:
         ).order_by(JoyInsight.created_at.desc()).all()
 
         if not insights:
-            console.print("[yellow]你还没有快乐定律，先积累5张卡片再去生成吧！[/yellow]")
+            console.print(t("no_insights_yet"))
             return
 
-        console.print(f"\n[bold]你有 {len(insights)} 条快乐定律[/bold]\n")
+        console.print(t("insight_count_header", count=len(insights)))
 
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("#", width=3)
-        table.add_column("定律", width=40)
-        table.add_column("模式类型", width=12)
-        table.add_column("状态", width=8)
-        table.add_column("生成时间", width=16)
+        table.add_column(t("col_insight"), width=40)
+        table.add_column(t("col_pattern_type"), width=12)
+        table.add_column(t("col_status"), width=8)
+        table.add_column(t("col_generated_at"), width=16)
 
         for idx, insight in enumerate(insights, 1):
             status = ""
             if insight.is_confirmed:
-                status = "✓ 已确认"
+                status = t("label_confirmed")
             elif insight.is_rejected:
-                status = "✗ 已否决"
+                status = t("label_rejected")
 
             text = insight.insight_text
             if len(text) > 37:
@@ -318,7 +323,7 @@ class JoyFormulaCLI:
             table.add_row(
                 str(idx),
                 text,
-                insight.pattern_type or "未分类",
+                insight.pattern_type or t("label_uncategorized"),
                 status,
                 insight.created_at.strftime("%Y-%m-%d %H:%M")
             )
@@ -326,20 +331,20 @@ class JoyFormulaCLI:
         console.print(table)
 
         # 查看详情
-        detail = Prompt.ask("\n输入编号查看详情（回车返回）", default="")
+        detail = Prompt.ask(t("view_detail_prompt"), default="")
         if detail.isdigit() and 1 <= int(detail) <= len(insights):
             insight = insights[int(detail) - 1]
 
             status = ""
             if insight.is_confirmed:
-                status = "\n[green]✓ 已确认[/green]"
+                status = t("label_confirmed_rich")
             elif insight.is_rejected:
-                status = "\n[red]✗ 已否决[/red]"
+                status = t("label_rejected_rich")
 
             # 构建证据卡片信息
             evidence_text = ""
             if insight.evidence_cards:
-                evidence_text = "\n\n[bold]关联的快乐卡片:[/bold]"
+                evidence_text = f"\n\n{t('label_related_cards')}"
                 for ev in insight.evidence_cards:
                     card_id = ev.get("card_id", "")
                     quote = ev.get("quote", "")
@@ -354,14 +359,14 @@ class JoyFormulaCLI:
 
             console.print(Panel(
                 f"[bold]{insight.insight_text}[/bold]\n\n"
-                f"[dim]模式类型: {insight.pattern_type or '未分类'}[/dim]\n"
-                f"[dim]生成时间: {insight.created_at.strftime('%Y-%m-%d %H:%M')}[/dim]"
+                f"[dim]{t('label_pattern_type')}: {insight.pattern_type or t('label_uncategorized')}[/dim]\n"
+                f"[dim]{t('col_generated_at')}: {insight.created_at.strftime('%Y-%m-%d %H:%M')}[/dim]"
                 f"{status}"
                 f"{evidence_text}",
-                title=f"[bold cyan]定律 #{detail}[/bold cyan]",
+                title=t("insight_title", num=detail),
                 border_style="cyan"
             ))
-            Prompt.ask("\n按回车继续")
+            Prompt.ask(t("press_enter_continue"))
 
     def explore_joy(self):
         """快乐盲盒"""
@@ -371,55 +376,55 @@ class JoyFormulaCLI:
         ).order_by(JoyCard.created_at.desc()).limit(5).all()
 
         if not insights and len(recent_cards) < 3:
-            console.print("[yellow]数据不足，需要至少3张快乐卡片或1条快乐定律[/yellow]")
+            console.print(t("explore_insufficient_data"))
             return
 
-        console.print("\n[bold cyan]🎁 快乐盲盒[/bold cyan]")
-        energy = IntPrompt.ask("你现在的能量值是多少？", default=5, show_default=True)
+        console.print(t("explore_title"))
+        energy = IntPrompt.ask(t("energy_prompt"), default=5, show_default=True)
 
         if not 1 <= energy <= 10:
-            console.print("[red]能量值请输入1-10之间的数字[/red]")
+            console.print(t("energy_range_error"))
             return
 
-        console.print(f"\n[bold]基于你的能量值 {energy}/10 生成推荐...[/bold]")
+        console.print(t("energy_generating", energy=energy))
 
         try:
-            with console.status("[bold green]AI 正在为你定制快乐方案..."):
+            with console.status(t("energy_status")):
                 recommendations = ExplorationService.recommend(
                     energy_level=energy,
                     insights=insights,
                     recent_cards=recent_cards
                 )
 
-            console.print(f"\n[bold green]✓ 为你准备了 {len(recommendations)} 个快乐探索方案[/bold green]\n")
+            console.print(t("explore_generated", count=len(recommendations)))
 
             for idx, rec in enumerate(recommendations, 1):
                 console.print(Panel(
                     f"[bold]{rec['title']}[/bold]\n\n"
                     f"{rec['description']}\n\n"
-                    f"[dim]适合原因: {rec.get('energy_match', '基于你的历史快乐模式')}[/dim]",
-                    title=f"[bold cyan]推荐 #{idx}[/bold cyan]",
+                    f"[dim]{t('label_energy_match')}: {rec.get('energy_match', t('label_energy_match_default'))}[/dim]",
+                    title=t("explore_rec_title", num=idx),
                     border_style="cyan"
                 ))
 
         except Exception as e:
-            console.print(f"[red]推荐失败: {str(e)}[/red]")
+            console.print(t("recommendation_failed", error=str(e)))
 
-        Prompt.ask("\n按回车返回主菜单")
+        Prompt.ask(t("press_enter_return"))
 
     def switch_ai_provider(self):
         """切换AI提供商"""
         from app.config import settings
         from app.services.ai_service import ai_service
 
-        console.print("\n[bold]当前AI提供商:[/bold]", settings.AI_PROVIDER)
-        console.print("\n可用选项:")
+        console.print(t("current_provider"), settings.AI_PROVIDER)
+        console.print(t("available_options"))
         console.print("1. anthropic (Claude)")
         console.print("2. openai (GPT)")
         console.print("3. gemini (Google)")
-        console.print("4. custom (自定义端点)")
+        console.print(f"4. custom ({t('label_custom_endpoint')})")
 
-        choice = Prompt.ask("选择提供商", choices=["1", "2", "3", "4"])
+        choice = Prompt.ask(t("provider_prompt"), choices=["1", "2", "3", "4"])
 
         provider_map = {
             "1": "anthropic",
@@ -432,8 +437,16 @@ class JoyFormulaCLI:
         settings.AI_PROVIDER = new_provider
         ai_service.__init__(new_provider)
 
-        console.print(f"[green]✓ 已切换到 {new_provider}[/green]")
-        Prompt.ask("\n按回车返回主菜单")
+        console.print(t("provider_switched", provider=new_provider))
+        Prompt.ask(t("press_enter_return"))
+
+    def switch_language(self):
+        """切换语言"""
+        console.print("\n[bold]1. 中文[/bold]")
+        console.print("[bold]2. English[/bold]")
+        lang_choice = Prompt.ask(t("language_prompt"), choices=["1", "2"])
+        set_language("zh" if lang_choice == "1" else "en")
+        console.print(t("language_switched"))
 
 
 def main():
@@ -445,9 +458,9 @@ def main():
     try:
         cli.start()
     except KeyboardInterrupt:
-        console.print("\n[yellow]程序已退出[/yellow]")
+        console.print(t("program_exited"))
     except Exception as e:
-        console.print(f"\n[red]错误: {str(e)}[/red]")
+        console.print(t("error_prefix", error=str(e)))
         import traceback
         traceback.print_exc()
 
