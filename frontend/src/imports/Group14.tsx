@@ -1,4 +1,3 @@
-import React from 'react';
 import svgPaths from "./svg-bkazuxlag9";
 
 function Group() {

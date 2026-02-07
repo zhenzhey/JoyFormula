@@ -1,4 +1,3 @@
-import React from 'react';
 import svgPaths from "./svg-ocd6izmbz2";
 
 export default function Vector() {
