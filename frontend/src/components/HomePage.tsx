@@ -6,6 +6,8 @@ import svgPaths2 from "../imports/svg-qg7g61fb9c";
 import svgPathsTheorem from "../imports/svg-8blp8pu86r";
 import svgPathsGiftBox from "../imports/svg-bkazuxlag9";
 import imgImage9 from "figma:asset/f232edc536b9310bdca4bcd53c1aee8a1be5c1d1.png";
+import joyFrameTitle from "../assets/joyframe.png";
+import joyBlindboxTitle from "../assets/joyblindbox .png";
 import { cardsApi } from '../api';
 import type { JoyCard } from '../types';
 
@@ -128,7 +130,11 @@ function TheoremCard({ onNavigateTheoremEdit }: { onNavigateTheoremEdit: () => v
 function GiftBoxFrame() {
   return (
     <div className="h-[3.981px] relative w-[26.351px]">
-      <p className="-translate-x-1/2 absolute font-['Itim:Regular',sans-serif] leading-none left-[13.18px] not-italic text-[#a28f7e] text-[3.981px] text-center top-0 w-[26.351px] whitespace-pre-wrap">JOYBLINDBOX</p>
+      <img
+        alt="JOYBLINDBOX"
+        className="absolute inset-0 h-full w-full object-contain"
+        src={joyBlindboxTitle}
+      />
       <div className="absolute h-[0.431px] left-[3.19px] top-[1.59px] w-0">
         <div className="absolute inset-[-30%_-0.13px]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 0.258736 0.689962">
@@ -734,13 +740,11 @@ function Frame2() {
       transition={{ duration: 0.5 }}
       className="absolute h-[48.882px] left-[69.3px] top-[38.32px] w-[262.544px]"
     >
-      <p className="absolute font-['Itim:Regular',sans-serif] leading-[normal] left-0 not-italic text-[#2b2a2a] text-[41.063px] top-0">JOYFORMULA</p>
-      <Frame />
-      <div className="absolute flex h-[12.624px] items-center justify-center left-[104.86px] top-[19.71px] w-[7.483px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "153.5" } as React.CSSProperties}>
-        <div className="flex-none rotate-[-179.58deg]">
-          <Frame1 />
-        </div>
-      </div>
+      <img
+        alt="JOYFORMULA"
+        className="absolute left-0 top-0 h-full w-full object-contain"
+        src={joyFrameTitle}
+      />
     </motion.div>
   );
 }

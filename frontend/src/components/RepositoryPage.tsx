@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
 import svgPaths from "../imports/svg-yf3nbfz6ej";
+import joyRepoTitle from "../assets/joyrepo.png";
 
 //overall repo page, showing calendar and emotion cards, with nav bar at the bottom to switch between pages
 
@@ -77,22 +78,16 @@ export default function RepositoryPage({ onNavigateTheorem, onNavigateCard, onNa
         transition={{ duration: 0.5 }}
         className="absolute left-[114px] top-[50px] w-[180px]"
       >
-        <p className="font-['Itim:Regular',sans-serif] text-[32px] text-black text-center">JOYREPO</p>
+        <img
+          alt="JOYREPO"
+          className="h-[32px] w-full object-contain"
+          src={joyRepoTitle}
+        />
         <div className="flex gap-2 justify-center mt-2">
           <div className="h-[1.5px] w-0 bg-black" />
           <div className="h-[1.5px] w-0 bg-black" />
         </div>
       </motion.div>
-
-      {/* Tabs */}
-      <div className="absolute left-[75px] top-[105px] flex gap-[20px]">
-        <button className="bg-[#eee] rounded-[12px] px-[24px] py-[8px]">
-          <p className="font-['Istok_Web:Regular',sans-serif] text-[16px] text-black">Formula</p>
-        </button>
-        <button className="bg-[#d0d0d0] rounded-[12px] px-[24px] py-[8px]">
-          <p className="font-['Istok_Web:Regular',sans-serif] text-[16px] text-black">Thereom</p>
-        </button>
-      </div>
 
       {/* Calendar Grid */}
       <div className="absolute left-[34px] top-[170px] right-[34px]">

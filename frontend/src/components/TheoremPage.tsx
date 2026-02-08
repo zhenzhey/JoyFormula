@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
 import svgPaths from "../imports/svg-svkz6eqmyl";
+import joyRepoTitle from "../assets/joyrepo.png";
 import { insightsApi, cardsApi } from '../api';
 import type { JoyInsight, JoyCard } from '../types';
 
@@ -447,7 +448,11 @@ function Frame6() {
         </div>
       </div>
       <Frame />
-      <p className="absolute font-['Itim:Regular',sans-serif] leading-[normal] left-0 not-italic text-[40.768px] text-black top-0">JOYREPO</p>
+      <img
+        alt="JOYREPO"
+        className="absolute left-0 top-0 h-full w-full object-contain"
+        src={joyRepoTitle}
+      />
     </div>
   );
 }
@@ -528,10 +533,6 @@ export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigate
       </div>
       <Frame10 />
       <Component onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateRepository={onNavigateRepository} />
-      <div className="absolute bg-[#ccc] h-[38.322px] left-[75.01px] rounded-[36px] shadow-[0px_2px_4px_0px_rgba(84,84,84,0.25)] top-[105.18px] w-[119.857px]" />
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[109.26px] not-italic text-[14.309px] text-black top-[114.15px]">Formula</p>
-      <div className="absolute bg-[#e8e8e8] h-[38.322px] left-[206.28px] rounded-[36px] shadow-[0px_2px_4px_0px_rgba(84,84,84,0.25)] top-[105.18px] w-[119.857px]" />
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[240.53px] not-italic text-[14.309px] text-black top-[114.15px]">Thereom</p>
       <Frame6 />
     </div>
   );
