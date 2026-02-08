@@ -43,11 +43,20 @@ class ChatService:
         # 检查是否包含完整的公式（检测JSON输出）
         formula_data = ChatService._extract_formula(ai_reply)
 
+        # 如果检测到公式，从显示内容中移除 JSON 代码块
+        display_reply = ai_reply
+        if formula_data is not None:
+            # 移除 JSON 代码块，只保留其他文本
+            display_reply = re.sub(r'```json\s*\{.*?\}\s*```', '', ai_reply, flags=re.DOTALL).strip()
+            # 如果移除后为空，添加一个默认消息
+            if not display_reply:
+                display_reply = "Great! I've created your joy card! 🎉" if lang == "en" else "太棒了！我已经为你创建了快乐卡片！🎉"
+
         return {
-            "assistant_reply": ai_reply,
+            "assistant_reply": display_reply,
             "is_complete": formula_data is not None,
             "formula": formula_data,
-            "updated_history": messages + [{"role": "assistant", "content": ai_reply}]
+            "updated_history": messages + [{"role": "assistant", "content": ai_reply}]  # 保留完整内容到历史
         }
 
     @staticmethod

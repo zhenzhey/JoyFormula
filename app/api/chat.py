@@ -65,7 +65,9 @@ def send_message(
     card_data = None
     has_card_draft = False
     if result["is_complete"]:
-        formula = result["formula"]["formula"]
+        formula_result = result["formula"]
+        formula = formula_result["formula"]
+        card_summary = formula_result["card_summary"]
         all_user_inputs = "\n".join(
             msg["content"] for msg in session.messages if msg["role"] == "user"
         )
@@ -82,7 +84,7 @@ def send_message(
             existing_card.formula_event = formula.get("event")
             existing_card.formula_trigger = formula.get("trigger")
             existing_card.formula_sensation = formula.get("sensation")
-            existing_card.card_summary = result["formula"]["card_summary"]
+            existing_card.card_summary = card_summary
             existing_card.conversation_history = session.messages
             card = existing_card
         else:
@@ -94,7 +96,7 @@ def send_message(
                 formula_event=formula.get("event"),
                 formula_trigger=formula.get("trigger"),
                 formula_sensation=formula.get("sensation"),
-                card_summary=result["formula"]["card_summary"],
+                card_summary=card_summary,
                 conversation_history=session.messages
             )
             db.add(card)

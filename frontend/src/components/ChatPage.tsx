@@ -8,6 +8,7 @@ import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
 import { chatApi } from '../api';
 import type { JoyCardData } from '../types';
+import { JoyCard } from './JoyCard';
 
 interface Message {
   type: 'ai' | 'user';
@@ -391,6 +392,13 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
                   <p className="font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic text-[#a1a1a1] text-[8.791px] mt-2">
                     {message.time}
                   </p>
+
+                  {/* Show JoyCard if present */}
+                  {message.card && (
+                    <div className="mt-4">
+                      <JoyCard data={message.card} />
+                    </div>
+                  )}
                 </div>
               ) : (
                 // User Message - positioned like Frame6
