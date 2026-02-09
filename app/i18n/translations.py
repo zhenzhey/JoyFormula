@@ -879,272 +879,29 @@ INSIGHT_GENERATION_PROMPT = {
 - statement 是对快乐模式的简洁陈述
 - keywords 是3-5个与此快乐模式相关的关键词/短语""",
 
-    "en": """Analyze the following user's joy cards, identify patterns and regularities, and generate "Joy Theorems."
-
+    "en": """# Joy Theorem Generator
+    Analyze the following user's joy cards, identify patterns and regularities, and generate 1-2 Joy Theorems. If generating 2 theorems, ensure they capture different dimensions of the user's joy (e.g., one about social patterns, one about sensory patterns; or one about solitude, one about connection).
+You are "Joy", analyzing user happiness patterns to generate "Joy Theorems" - deep insights about what brings them joy.
 ## Card Data
 {cards_json}
 
-# Context
+## Input
+User's joy cards in JSON format with fields: scene, people, event, drive, sensation, etc.
 
-You are "Joy", the user's happiness observer. Once the user has accumulated 5+ joy formulas, you need to discover **patterns** from this data and generate "Joy Theorems."
-
-A Joy Theorem is not a simple summary — it's a **deep insight that spans multiple joy formulas** — helping the user see happiness patterns they didn't even realize.
-
----
-
-# What is a Joy Theorem
-
-A Joy Theorem consists of the following parts:
-
-## 1. Insight
-A **specific pattern** discovered across multiple joy formulas.
-
-**Characteristics**:
-- Fact-based (references specific joy formulas)
-- Points out recurring elements
-- Supported by data or concrete examples
-- 1-2 sentences, concise and powerful
-
-**Good Insight examples**:
-- "Public speaking is your joy anchor — classroom presentations, sharing new ideas at gatherings all point to it."
-- "5 of your happy moments involve spending time with imaginative friends who instantly get your vision."
-- "You are highly sensitive to touch and temperature. You mention physical sensations 2.3x more often than average when describing happiness."
-- "Watching the sunset alone in the evening instantly activates your joy."
-
-**Bad Insights** (too vague, no real insight):
-- "You like being with friends" (obvious)
-- "Good food makes you happy" (too surface-level)
-- "You enjoy relaxing" (not specific)
-
-## 2. Statement
-Distill the Insight into **a single-sentence happiness rule**.
-
-**Characteristics**:
-- Concise and powerful
-- Like a replicable "formula"
-- Remove specific cases, keep the core pattern
-
-**Insight to Statement examples**:
-
-| Insight | Statement |
-|---------|-----------|
-| "Public speaking is your joy anchor — classroom presentations, sharing ideas at gatherings all point to it." | "Public speaking in front of many people often brings a sense of fulfillment" |
-| "5 of your happy moments involve imaginative friends who instantly get your vision." | "Deep conversations with friends who have vivid imagination bring joy" |
-| "Watching the sunset alone in the evening instantly activates your joy." | "Watching the sunset alone in the evening brings instant joy" |
-
-## 3. Keywords (5-8)
-High-frequency elements **directly extracted** from joy formulas.
-
-**Requirements**:
-- Extract from scene / people / event / drive / sensation
-- Keep them short (2-4 words each)
-- Preserve original phrasing, don't over-generalize
-
-**Examples**:
-- Public speaking: `["classroom presentation", "sharing ideas", "group setting", "being noticed", "self-expression"]`
-- Imaginative friends: `["vivid imagery", "painting a picture", "instant understanding", "deep conversation", "on the same wavelength"]`
-- Touch sensitivity: `["warm touch", "physical sensation", "cozy temperature", "soft texture", "hugs"]`
-
-## 4. Evidence
-Quote specific joy formulas that support this theorem.
-
-**Format**:
-```json
-"evidence": [
-  {{"card_id": "card_001", "quote": "excerpt of user's own words"}},
-  {{"card_id": "card_003", "quote": "excerpt of user's own words"}}
-]
-```
-
-**Requirements**:
-- Each evidence must include card_id (the joy formula's ID)
-- quote is the user's **own words** that best demonstrate this pattern
-- Cite at least 3 joy formulas as evidence
-- Quotes should be short and impactful (1-2 sentences)
-
-## 5. Pattern_type
-Categorize this joy theorem into a **pattern type label**.
-
-**Common Pattern Types**:
-- `Social Connection`: Joy related to interacting with others
-- `Creative Expression`: Joy related to self-expression and creation
-- `Self-Mastery`: Joy related to learning, growth, and skill mastery
-- `Sensory Delight`: Joy related to visual, auditory, tactile sensory experiences
-- `Solitude & Reflection`: Joy related to being alone, thinking, introspection
-- `Achievement & Recognition`: Joy related to completing tasks and being recognized
-- `Nature & Environment`: Joy related to natural settings and specific environments
-- `Playfulness & Spontaneity`: Joy related to casual play and spontaneous experiences
-
-**Selection criteria**:
-- Choose the type that best matches the core content of the insight
-- If a theorem spans multiple types, pick the primary one
-- You can create new pattern_types, but make sure they're meaningful
-
----
-
-# How to Discover Patterns
-
-## Analysis Dimensions
-
-When you have 5+ joy formulas, look for **recurring elements** from these angles:
-
-### 1. People Dimension (Social Patterns)
-- Alone vs. group?
-- What type of people? (What common traits?)
-- Nature of the relationship? (Deep conversation vs. casual fun)
-
-**Example patterns**:
-- "80% of your joy involves being alone"
-- "You gravitate toward friends who are deep thinkers"
-- "Small groups (2-3 people) make you happier than large gatherings"
-
-### 2. Scene Dimension (Environment Patterns)
-- Time preference? (Morning / evening / late night)
-- Place preference? (Indoors / outdoors / cafes)
-- Atmosphere preference? (Quiet / lively / nature)
-
-**Example patterns**:
-- "Evening appeared 4 times — it's your 'golden hour of joy'"
-- "Your joy scenes all involve natural light"
-- "Cafes are your joy headquarters, appearing 6 times"
-
-### 3. Event Dimension (Behavioral Patterns)
-- What were they doing?
-- Active vs. passive?
-- Creating vs. receiving?
-
-**Example patterns**:
-- "Your joy is tied to expression (presenting, writing, sharing)"
-- "You enjoy listening to others' stories rather than telling your own"
-- "Making things with your hands (drawing, cooking, coding) is your joy source"
-
-### 4. Sensation Dimension (Sensory Patterns)
-This is the **most important dimension** because it's the "soul" of happiness.
-
-- Visual? (Images, colors, light)
-- Auditory? (Music, conversation, sounds)
-- Tactile? (Temperature, texture, physical sensations)
-- Olfactory? (Aromas, food)
-- Psychological? (Achievement, being understood, surprise)
-
-**Example patterns**:
-- "You are highly sensitive to touch and temperature"
-- "Your joy is tied to visual imagery (sunsets, rainy days, cafe ambiance)"
-- "The feeling of being understood appeared 7 times"
-
-### 5. Drive Dimension (Motivation Patterns)
-- Why did they do this?
-- What inner need was fulfilled?
-
-**Example patterns**:
-- "Your joy is tied to the need for self-expression"
-- "You prefer learning and growth over simple relaxation"
-- "You need to be seen — that's the core driver of your joy"
-
----
-
-# Output Format
-
-When you've found clear patterns, generate Joy Theorems using this JSON format:
+## Output Format (STRICT)
 
 ```json
 {{
   "insights": [
     {{
-      "insight": "Public speaking is your joy anchor — classroom presentations, sharing new ideas at gatherings all point to it.",
-      "statement": "Public speaking in front of many people often brings a sense of fulfillment",
-      "keywords": ["classroom presentation", "sharing ideas", "group setting", "being noticed", "self-expression", "presenting on stage"],
+      "insight": "Specific pattern observation with data support (1-2 sentences)",
+      "statement": "Concise joy rule with key details (10-15 words ideal)",
+      "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
       "evidence": [
-        {{"card_id": "card_001", "quote": "Gave a presentation in class, everyone was really paying attention"}},
-        {{"card_id": "card_002", "quote": "Shared a new idea at a friend gathering, everyone got into a lively discussion"}},
-        {{"card_id": "card_003", "quote": "Shared my thoughts on a book at the reading club, got praised by the host"}}
+        {{"card_id": "card_001", "quote": "brief user quote"}},
+        {{"card_id": "card_003", "quote": "brief user quote"}}
       ],
-      "pattern_type": "Creative Expression"
-    }}
-  ]
-}}
-```
-
-**JSON field descriptions**:
-- `insights`: Array containing all discovered Joy Theorems
-- `insight`: Core insight (1-2 sentences)
-- `statement`: Theorem statement (one concise sentence)
-- `keywords`: Array of keywords (5-8)
-- `evidence`: Array of evidence, each containing:
-  - `card_id`: The joy formula's ID
-  - `quote`: Excerpt of the user's own words
-- `pattern_type`: Pattern type label
-
----
-
-# Generation Strategy
-
-## When to Generate a Joy Theorem
-
-**Trigger conditions**:
-1. User has accumulated 5+ joy formulas
-2. You've found a **clear pattern** (at least 3 joy formulas point to the same rule)
-3. User actively asks "What are my joy patterns?"
-
-**Do NOT trigger when**:
-- Too few joy formulas (<5)
-- No obvious repeating patterns
-- Joy formulas are completely unrelated
-
----
-
-# Quality Standards
-
-## Characteristics of a Good Joy Theorem
-
-1. **Specific**
-   - Bad: "You like being with friends"
-   - Good: "You enjoy deep conversations with friends who can paint a picture and instantly get your vision"
-
-2. **Surprising (Insightful)**
-   - Bad: "Good food makes you happy"
-   - Good: "Your joy doesn't come from the food itself, but from the serendipity of stumbling upon things you love"
-
-3. **Actionable (Replicable)**
-   - Bad: "You enjoy good experiences" (obvious)
-   - Good: "Watching the sunset alone in the evening instantly triggers your joy" (user can actively replicate this)
-
-4. **Data-backed**
-   - Good: "5 of your happy moments involve imaginative friends"
-   - Good: "Touch sensitivity: you mention physical sensations 2.3x more often than average when describing happiness"
-
----
-
-# Examples
-
-## Full Example 1: Public Speaking Pattern
-
-**User's joy formulas** (partial):
-- card_001: Gave a presentation in class, everyone was really paying attention
-- card_002: Shared a new idea at a friend gathering, sparked a lively discussion
-- card_003: Shared my thoughts on a book at the reading club, got praised by the host
-- card_004: Proposed a suggestion at a company meeting, boss said "great idea"
-
-**Analysis**:
-- People: All involve group settings (classroom, gathering, reading club, meeting)
-- Event: All involve expressing opinions (presenting, sharing ideas, giving thoughts, proposing)
-- Sensation: All have a feeling of being noticed and recognized
-
-**Generated Joy Theorem**:
-```json
-{{
-  "insights": [
-    {{
-      "insight": "Public speaking is your joy anchor — classroom presentations, sharing new ideas at gatherings all point to it.",
-      "statement": "Public speaking in front of many people often brings a sense of fulfillment",
-      "keywords": ["classroom presentation", "sharing ideas", "group setting", "being noticed", "self-expression"],
-      "evidence": [
-        {{"card_id": "card_001", "quote": "Gave a presentation in class, everyone was really paying attention"}},
-        {{"card_id": "card_002", "quote": "Shared a new idea at a friend gathering, sparked a lively discussion"}},
-        {{"card_id": "card_003", "quote": "Shared my thoughts on a book at the reading club, got praised by the host"}},
-        {{"card_id": "card_004", "quote": "Proposed a suggestion at a company meeting, boss said great idea"}}
-      ],
-      "pattern_type": "Creative Expression"
+      "pattern_type": "Category label"
     }}
   ]
 }}
@@ -1152,33 +909,151 @@ When you've found clear patterns, generate Joy Theorems using this JSON format:
 
 ---
 
-## Full Example 2: Imaginative Friends Pattern
+## Component Guidelines
 
-**User's joy formulas** (partial):
+### 1. Insight (1-2 sentences)
+Point out the **specific, non-obvious pattern** you discovered.
+
+**Must be:**
+- Based on patterns from **3+ cards minimum**
+- Reveals something the user may not have realized
+- Supported by concrete data
+
+**Good:**
+- "5 of your happy moments involve imaginative friends who instantly picture what you describe."
+- "You mention physical warmth and touch in 6 cards - 2.3x above average."
+- "Evening solitude with natural light appears in 4 cards - your golden hour."
+
+**Bad:**
+- "You like being with friends" (too obvious, no insight)
+- "Good experiences make you happy" (meaningless)
+- "You enjoyed coffee twice" (only 2 cards, not enough for a pattern)
+
+### 2. Statement (10-15 words ideal)
+A replicable joy formula - **specific enough to be insightful, concise enough to remember**.
+
+**Good:**
+- "Deep conversations with friends who have vivid imagination bring joy"
+- "Watching the sunset alone in the evening brings instant joy"
+- "Warm and comfortable physical sensations bring instant joy"
+- "Public speaking in front of many people brings fulfillment"
+
+**Bad:**
+- "Public speaking brings fulfillment" (too generic, loses the insight)
+- "Engaging in meaningful verbal communication with multiple individuals in formal or informal settings generates positive emotional responses" (way too long)
+
+### 3. Keywords (5-8 words)
+**Single words or very short phrases** (2-3 words max) from user's actual language.
+
+**Preferred:** Single words when possible
+**Acceptable:** Short 2-3 word phrases if they capture something specific
+
+**Good:**
+- `["light", "quiet", "sunset", "solitude", "warmth"]`
+- `["deep conversation", "imagination", "understanding", "connection", "vision"]`
+- `["vivid imagery", "instant understanding", "wavelength", "depth", "storytelling"]`
+
+**Bad:**
+- `["spending time in quiet contemplation", "experiencing meaningful connections"]` (too long)
+- `["happiness", "positivity", "good vibes"]` (too generic)
+
+### 4. Evidence
+Brief quotes (1 sentence) from user's cards that support the pattern.
+
+**Must include:**
+- **Minimum 3 evidence items** (matching the 3+ cards requirement)
+- Accurate `card_id` references
+- User's original words (brief excerpts)
+
+### 5. Pattern Types
+Choose the best fit:
+- `Social Connection` - Joy from interacting with others
+- `Creative Expression` - Joy from self-expression and creation
+- `Self-Mastery` - Joy from learning, growth, skill development
+- `Sensory Delight` - Joy from sensory experiences (visual, tactile, etc.)
+- `Solitude & Reflection` - Joy from being alone, introspection
+- `Achievement & Recognition` - Joy from accomplishment and being recognized
+- `Nature & Environment` - Joy from natural settings and environments
+- `Playfulness & Spontaneity` - Joy from play and spontaneous experiences
+
+---
+
+## Pattern Discovery Rules
+
+**Only generate a Joy Theorem when:**
+1. **3+ cards share common elements** (people, scene, event, sensation, or drive)
+2. The pattern is **non-obvious** - reveals something insightful, not surface-level
+3. The pattern is **specific and actionable** - user can replicate it
+
+**Do NOT generate when:**
+- Only 2 cards share similarities (insufficient data)
+- Pattern is too obvious (e.g., "you like good experiences")
+- Cards are completely unrelated with no recurring themes
+
+---
+
+## Analysis Approach
+
+Look for patterns across these dimensions:
+
+**People:** Alone vs group? What traits do they share?  
+**Scene:** Time of day? Location? Atmosphere?  
+**Event:** What actions repeat?  
+**Sensation:** Which senses dominate? (visual, tactile, psychological)  
+**Drive:** What inner need gets fulfilled?
+
+Find elements that appear in **3+ cards** - that's your pattern.
+
+---
+
+## Quality Standards
+
+**Specific, not generic:**
+- ❌ "You like being with friends"
+- ✅ "Deep conversations with imaginative friends who get your vision bring joy"
+
+**Insightful, not obvious:**
+- ❌ "Good food makes you happy"
+- ✅ "Your joy comes from stumbling upon exactly what you love - the serendipity, not just the food"
+
+**Actionable, not vague:**
+- ❌ "Good experiences bring happiness"
+- ✅ "Evening solitude with natural light brings instant calm"
+
+**Data-backed with 3+ cards:**
+- ✅ "5 cards involve imaginative friends"
+- ✅ "Physical warmth appears in 6 cards"
+- ❌ "You enjoyed this twice" (only 2 cards)
+
+---
+
+## Complete Example
+
+**Input cards:**
 - card_005: Chatted with Mike, he told me about starting a business at 14, I could picture it vividly
 - card_006: Discussed an app idea with a designer friend, she instantly understood my vision
-- card_007: Talked about a sci-fi novel with a book club friend, he said "I totally get that feeling"
-- card_008: Described a dream scene to my roommate, she said "I can almost see it"
-- card_009: Met a stranger at a cafe, talked about our startup ideas, totally on the same wavelength
+- card_007: Talked about a sci-fi novel with a book club friend, he said I totally get that feeling
+- card_008: Described a dream scene to my roommate, she said I can almost see it
+- card_009: Met a stranger at a cafe, discussed startup ideas, totally on the same wavelength
 
-**Analysis**:
-- People: All are people who "understand abstract concepts", "think in images", "instant connection"
-- Event: All involve deep conversation, describing visions/ideas
-- Sensation: All have a feeling of "being understood", "on the same wavelength", "they get my vision"
+**Analysis:**
+- **Common element:** All 5 cards involve friends with vivid imagination/instant understanding
+- **Pattern is non-obvious:** Not just "you like friends" - it's specifically about *imaginative* friends who visualize
+- **Supported by 5 cards** (exceeds 3+ minimum)
 
-**Generated Joy Theorem**:
+**Output:**
 ```json
 {{
   "insights": [
     {{
       "insight": "5 of your happy moments involve spending time with imaginative friends who can picture a scene the moment you describe it.",
       "statement": "Deep conversations with friends who have vivid imagination bring joy",
-      "keywords": ["vivid imagery", "painting a picture", "instant understanding", "deep conversation", "on the same wavelength"],
+      "keywords": ["vivid imagery", "instant understanding", "deep conversation", "vision", "wavelength"],
       "evidence": [
-        {{"card_id": "card_005", "quote": "Chatted with Mike, he told me about starting a business at 14, I could picture it vividly"}},
-        {{"card_id": "card_006", "quote": "Discussed an app idea with a designer friend, she instantly understood my vision"}},
-        {{"card_id": "card_007", "quote": "Talked about a sci-fi novel with a book club friend, he said I totally get that feeling"}},
-        {{"card_id": "card_008", "quote": "Described a dream scene to my roommate, she said I can almost see it"}}
+        {{"card_id": "card_005", "quote": "Chatted with Mike about starting a business at 14, I could picture it vividly"}},
+        {{"card_id": "card_006", "quote": "Discussed an app idea with designer friend, she instantly understood my vision"}},
+        {{"card_id": "card_007", "quote": "Talked about sci-fi novel, he said I totally get that feeling"}},
+        {{"card_id": "card_008", "quote": "Described a dream scene to roommate, she said I can almost see it"}}
       ],
       "pattern_type": "Social Connection"
     }}
@@ -1188,75 +1063,14 @@ When you've found clear patterns, generate Joy Theorems using this JSON format:
 
 ---
 
-## Full Example 3: Touch Sensitivity Pattern
-
-**User's joy formulas** (partial):
-- card_010: Winter at a cafe, holding a hot coffee cup, feeling so warm
-- card_011: Hugging a friend, feeling their body warmth
-- card_012: Basking in the sun, sunlight warm on my skin
-- card_013: Putting on freshly dried clothes, soft and warm
-- card_014: Lying in bed, the blanket feels so cozy
-- card_015: After a shower, skin feeling smooth
-
-**Analysis**:
-- Sensation: All 6 happy moments mention "temperature" or "touch"
-- This frequency is significantly above average
-- Keywords: warmth, touch, comfort, soft
-
-**Generated Joy Theorem**:
-```json
-{{
-  "insights": [
-    {{
-      "insight": "You are highly sensitive to touch and temperature. You mention physical sensations 2.3x more often than average when describing happiness.",
-      "statement": "Warm and comfortable physical sensations bring instant joy",
-      "keywords": ["warm touch", "physical sensation", "cozy temperature", "soft texture", "sunlight", "hugs"],
-      "evidence": [
-        {{"card_id": "card_010", "quote": "Winter at a cafe, holding a hot coffee cup, feeling so warm"}},
-        {{"card_id": "card_011", "quote": "Hugging a friend, feeling their body warmth"}},
-        {{"card_id": "card_012", "quote": "Basking in the sun, sunlight warm on my skin"}},
-        {{"card_id": "card_013", "quote": "Putting on freshly dried clothes, soft and warm"}}
-      ],
-      "pattern_type": "Sensory Delight"
-    }}
-  ]
-}}
-```
-
----
-
-# Important Notes
-
-1. **Don't over-interpret**
-   - If only 2 joy formulas share a similarity, that's not enough for a Joy Theorem
-   - Need at least 3+ joy formulas pointing to the same pattern
-
-2. **Stay objective**
-   - Base insights on actual joy formula data
-   - Don't fabricate or speculate
-
-3. **Respect the user's feelings**
-   - After generating a Joy Theorem, let the user confirm
-   - If the user says "that's not right", accept and adjust
-
-4. **Avoid obvious/trivial theorems**
-   - Bad: "You like things that make you happy"
-   - Bad: "Good experiences bring you joy"
-   - Must have **genuine insight**
-
-5. **Evidence must be accurate**
-   - card_id must be a real joy formula ID that exists
-   - quote must be the user's own words, don't rewrite or embellish
-
----
-
-# Core Principle
-
-**A Joy Theorem is a tool to help users "see" their own happiness patterns.**
-
-A good Joy Theorem should give the user an "oh wow, so THAT's what it is!" moment, not a "well, duh" feeling.
-
-**IMPORTANT: All output must be strictly in JSON format and entirely in English — including insight, statement, keywords, and evidence quotes.**""",
+**Remember:**
+- Always use `{{` and `}}` double braces
+- **Minimum 3+ cards must share the pattern**
+- **Insight must be non-obvious** - reveal something surprising
+- Statement: 10-15 words with meaningful details
+- Keywords: single words or short 2-3 word phrases
+- Evidence: minimum 3 items from supporting cards
+- All output must be in English""",
 }
 
 EXPLORATION_SYSTEM_PROMPT = {

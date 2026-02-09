@@ -50,12 +50,41 @@ class InsightService:
             system_prompt=INSIGHT_SYSTEM_PROMPT[lang],
             messages=[{"role": "user", "content": prompt}],
             temperature=0.8,
-            max_tokens=3000
+            max_tokens=8000
         )
 
         # 提取JSON
         insights = InsightService._extract_insights(ai_reply)
         return insights
+
+    @staticmethod
+    def _extract_json_by_braces(text: str, start: int) -> str | None:
+        """从 start 位置的 '{' 开始，找到匹配的闭合 '}'，返回完整 JSON 字符串"""
+        if start < 0 or start >= len(text) or text[start] != '{':
+            return None
+        depth = 0
+        in_string = False
+        escape = False
+        for i in range(start, len(text)):
+            ch = text[i]
+            if escape:
+                escape = False
+                continue
+            if ch == '\\' and in_string:
+                escape = True
+                continue
+            if ch == '"' and not escape:
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    return text[start:i + 1]
+        return None
 
     @staticmethod
     def _extract_insights(ai_reply: str) -> List[Dict]:
@@ -64,7 +93,7 @@ class InsightService:
             print("[DEBUG] AI reply is empty")
             return []
 
-
+        # Strategy 1: ```json ... ``` complete code block
         json_match = re.search(r'```json\s*(.*?)\s*```', ai_reply, re.DOTALL)
         if json_match:
             try:
@@ -73,19 +102,36 @@ class InsightService:
                 return data.get("insights", [])
             except json.JSONDecodeError as e:
                 print(f"[DEBUG] JSON decode failed (code block): {e}")
-                print(f"[DEBUG] Attempted to parse: {json_match.group(1)[:500]}")
-        else:
-            print("[DEBUG] No ```json code block found")
 
-        json_match = re.search(r'\{[\s\S]*"insights"[\s\S]*\}', ai_reply)
+        # Strategy 2: ```json without closing ``` (truncated response)
+        # Extract everything after ```json and use balanced braces
+        json_match = re.search(r'```(?:json)?\s*\n', ai_reply)
         if json_match:
-            try:
-                data = json.loads(json_match.group(0))
-                print(f"[DEBUG] Parsed from raw JSON, insights count: {len(data.get('insights', []))}")
-                return data.get("insights", [])
-            except json.JSONDecodeError as e:
-                print(f"[DEBUG] JSON decode failed (raw): {e}")
-        else:
-            print("[DEBUG] No raw JSON with 'insights' found")
+            content_after = ai_reply[json_match.end():]
+            brace_pos = content_after.find('{')
+            if brace_pos != -1:
+                json_str = InsightService._extract_json_by_braces(content_after, brace_pos)
+                if json_str:
+                    try:
+                        data = json.loads(json_str)
+                        print(f"[DEBUG] Parsed from code block (balanced braces), insights count: {len(data.get('insights', []))}")
+                        return data.get("insights", [])
+                    except json.JSONDecodeError as e:
+                        print(f"[DEBUG] JSON decode failed (code block balanced): {e}")
 
+        # Strategy 3: find "insights" keyword anywhere and extract JSON via balanced braces
+        insights_pos = ai_reply.find('"insights"')
+        if insights_pos != -1:
+            start = ai_reply.rfind('{', 0, insights_pos)
+            if start != -1:
+                json_str = InsightService._extract_json_by_braces(ai_reply, start)
+                if json_str:
+                    try:
+                        data = json.loads(json_str)
+                        print(f"[DEBUG] Parsed from balanced braces, insights count: {len(data.get('insights', []))}")
+                        return data.get("insights", [])
+                    except json.JSONDecodeError as e:
+                        print(f"[DEBUG] JSON decode failed (balanced): {e}")
+
+        print(f"[DEBUG] No parseable JSON found. AI reply preview: {ai_reply[:500]}")
         return []

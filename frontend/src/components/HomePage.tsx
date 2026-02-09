@@ -93,17 +93,32 @@ function TheoremCardNotification({ count }: { count: number }) {
   );
 }
 
-function TheoremCard({ onNavigateTheoremEdit, pendingCount }: { onNavigateTheoremEdit: () => void; pendingCount: number }) {
-  const isEnabled = pendingCount > 0;
+function TheoremCard({ onNavigateTheorem, totalCardCount, pendingCount }: { onNavigateTheorem: () => void; totalCardCount: number; pendingCount: number }) {
+  const isEnabled = totalCardCount >= 5;
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleClick = async () => {
+    if (!isEnabled || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      await insightsApi.generateInsights();
+      onNavigateTheorem();
+    } catch (error) {
+      console.error('Failed to generate insights:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <motion.button
-      onClick={isEnabled ? onNavigateTheoremEdit : undefined}
+      onClick={handleClick}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 0.5 }}
-      whileHover={isEnabled ? { scale: 1.05 } : undefined}
-      whileTap={isEnabled ? { scale: 0.95 } : undefined}
-        className={`absolute h-[63.602px] w-[97.027px] ${isEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+      whileHover={isEnabled && !isGenerating ? { scale: 1.05 } : undefined}
+      whileTap={isEnabled && !isGenerating ? { scale: 0.95 } : undefined}
+        className={`absolute h-[63.602px] w-[97.027px] ${isEnabled && !isGenerating ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
         style={{ left: "82.35px", top: "700px" }}
     >
       {/* Shadow */}
@@ -846,8 +861,9 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
   const [latestCard, setLatestCard] = useState<JoyCard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingInsightCount, setPendingInsightCount] = useState(0);
+  const [totalCardCount, setTotalCardCount] = useState(0);
 
-  // Load latest joy card
+  // Load latest joy card and total count
   useEffect(() => {
     const loadLatestCard = async () => {
       try {
@@ -855,6 +871,7 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
         if (response.cards && response.cards.length > 0) {
           setLatestCard(response.cards[0]);
         }
+        setTotalCardCount(response.total);
       } catch (error) {
         console.error('Failed to load latest card:', error);
       } finally {
@@ -900,7 +917,7 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[256.02px] not-italic text-[8.154px] text-black top-[163.89px] w-[140px] whitespace-pre-wrap">This is your 96th JoyFormula.</p>
       
       {/* Theorem Card and Gift Box */}
-      <TheoremCard onNavigateTheoremEdit={onNavigateTheoremEdit} pendingCount={pendingInsightCount} />
+      <TheoremCard onNavigateTheorem={onNavigateTheorem} totalCardCount={totalCardCount} pendingCount={pendingInsightCount} />
       <GiftBox onNavigateGiftBox={onNavigateGiftBox} />
       
       <Component1 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
