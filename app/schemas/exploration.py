@@ -11,6 +11,7 @@ class RecommendationItem(BaseModel):
     description: str
     related_insight: Optional[str] = None
     energy_match: Optional[str] = None
+    confidence: Optional[int] = None
 
 
 class ExplorationResponse(BaseModel):

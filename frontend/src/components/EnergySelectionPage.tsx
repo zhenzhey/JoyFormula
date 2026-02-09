@@ -4,8 +4,6 @@ import joyBlindboxTitle from "../assets/joyblindbox .png";
 import imgImage12 from "figma:asset/481ec9271992b35c78654813354c17a1bbe7b8b3.png";
 import imgImage13 from "figma:asset/dcf8b305885a632a490f729fe314980e8742e12a.png";
 import imgHappy19496721 from "figma:asset/d55f0c6f64187b2aff71cc2cc23da08b81665f02.png";
-import { explorationApi } from '../api';
-import type { Recommendation } from '../types';
 
 function Frame() {
   return (
@@ -124,13 +122,12 @@ interface EnergySelectionPageProps {
   onNavigateChat: () => void;
   onNavigateTheorem: () => void;
   onNavigateHome: () => void;
-  onContinue: (energyLevel: number, recommendations: Recommendation[]) => void;
+  onContinue: (energyLevel: number) => void;
 }
 
 export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem, onNavigateHome, onContinue }: EnergySelectionPageProps) {
   const [energyLevel, setEnergyLevel] = useState(20);
   const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
 
   const getEnergyColor = (level: number) => {
@@ -166,7 +163,8 @@ export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem,
     const rect = barRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setEnergyLevel(Math.round(percentage));
+    // Snap to nearest multiple of 10
+    setEnergyLevel(Math.round(percentage / 10) * 10);
   };
 
   useEffect(() => {
@@ -175,18 +173,8 @@ export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem,
     return () => window.removeEventListener('pointerup', handleGlobalPointerUp);
   }, []);
 
-  const handleContinue = async () => {
-    setIsLoading(true);
-    try {
-      const response = await explorationApi.getRecommendations(energyLevel);
-      onContinue(energyLevel, response.recommendations);
-    } catch (error) {
-      console.error('Failed to get recommendations:', error);
-      // 如果API失败，传递空数组
-      onContinue(energyLevel, []);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleContinue = () => {
+    onContinue(energyLevel);
   };
 
   return (
@@ -223,7 +211,7 @@ export default function EnergySelectionPage({ onNavigateChat, onNavigateTheorem,
       </div>
 
       {/* Energy percentage display */}
-      <p className="absolute font-['Istok_Web:Bold',sans-serif] leading-[normal] left-[185px] not-italic text-[#3a3a3a] text-[24px] text-center top-[383px]">
+      <p className="absolute font-['Istok_Web:Bold',sans-serif] leading-[normal] left-[185px] not-italic text-[#3a3a3a] text-[24px] text-center top-[383px] pointer-events-none select-none">
         {energyLevel}%
       </p>
 

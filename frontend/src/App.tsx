@@ -8,12 +8,14 @@ import TheoremEditPage from './components/TheoremEditPage';
 import EnergySelectionPage from './components/EnergySelectionPage';
 import BoxOpeningPage from './components/BoxOpeningPage';
 import BoxRevealPage from './components/BoxRevealPage';
+import { explorationApi } from './api';
 import type { Recommendation, JoyInsight } from './types';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'chat' | 'home' | 'repository' | 'theorem' | 'theoremEdit' | 'energySelection' | 'boxOpening' | 'boxReveal'>('home');
   const [energyLevel, setEnergyLevel] = useState(50);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [selectedInsight, setSelectedInsight] = useState<JoyInsight | undefined>();
 
   const pageVariants = {
@@ -140,10 +142,16 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
-              onContinue={(level, recs) => {
+              onContinue={(level) => {
                 setEnergyLevel(level);
-                setRecommendations(recs);
+                setRecommendations([]);
+                setIsLoadingRecommendations(true);
                 setCurrentPage('boxOpening');
+                // Fire API in background while user goes through box opening animation
+                explorationApi.getRecommendations(level)
+                  .then(response => setRecommendations(response.recommendations))
+                  .catch(err => console.error('Failed to get recommendations:', err))
+                  .finally(() => setIsLoadingRecommendations(false));
               }}
             />
           </motion.div>
@@ -185,6 +193,7 @@ export default function App() {
               onNavigateHome={() => setCurrentPage('home')}
               energyLevel={energyLevel}
               recommendations={recommendations}
+              isLoading={isLoadingRecommendations}
             />
           </motion.div>
         )}

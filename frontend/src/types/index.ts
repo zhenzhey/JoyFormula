@@ -95,10 +95,11 @@ export interface ExplorationRequest {
 }
 
 export interface Recommendation {
-  activity: string;
+  title: string;
   description: string;
-  energy_boost: number;
-  reasoning: string;
+  related_insight?: string;
+  energy_match?: string;
+  confidence?: number;
 }
 
 export interface ExplorationResponse {

@@ -1098,16 +1098,17 @@ EXPLORATION_PROMPT = {
 - 能量值高(8-10)：推荐新的探索方向，可以突破舒适区
 
 ## 输出格式
-以JSON格式输出，用```json包裹：
+以JSON格式输出，用```json包裹。每个推荐包含一个confidence字段(1-10)，表示你认为这个推荐有多适合该用户：
 
 ```json
 {{
   "recommendations": [
     {{
-      "title": "行动标题（简短有吸引力）",
+      "title": "行动标题（简短有吸引力，10字以内）",
       "description": "具体建议（50字以内，可执行）",
       "related_insight": "关联的快乐定律文本（如果有）",
-      "energy_match": "为什么适合当前能量值（20字以内）"
+      "energy_match": "为什么适合当前能量值（20字以内）",
+      "confidence": 8
     }}
   ]
 }}
@@ -1129,16 +1130,17 @@ Based on the user's current state and historical patterns, recommend 3 actionabl
 - High energy (8-10): Recommend new exploration directions that push comfort zones
 
 ## Output Format
-Output in JSON format, wrapped in ```json:
+Output in JSON format, wrapped in ```json. Each recommendation includes a confidence field (1-10) indicating how well-suited you think this recommendation is for the user:
 
 ```json
 {{
   "recommendations": [
     {{
-      "title": "Action title (short and appealing)",
+      "title": "Action title (short and appealing, under 5 words)",
       "description": "Specific suggestion (under 50 words, actionable)",
       "related_insight": "Related Joy Law text (if any)",
-      "energy_match": "Why it fits the current energy level (brief)"
+      "energy_match": "Why it fits the current energy level (brief)",
+      "confidence": 8
     }}
   ]
 }}

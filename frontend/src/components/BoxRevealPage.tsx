@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import svgPaths from "../imports/svg-qebtmxta3p";
 import joyBlindboxTitle from "../assets/joyblindbox .png";
@@ -165,20 +166,38 @@ interface BoxRevealPageProps {
   onNavigateTheorem: () => void;
   onNavigateHome: () => void;
   energyLevel: number;
+  recommendations?: Recommendation[];
+  isLoading?: boolean;
 }
 
-const gifts = [
-  { name: 'Yarn', color: '#fc7371', message: 'It is time to feel some warmth outside.' },
-  { name: 'Sunshine', color: '#FFD666', message: 'Brighten your day with some outdoor time!' },
-  { name: 'Book', color: '#8697F6', message: 'Time to dive into a new story.' },
-  { name: 'Tea', color: '#A9D66A', message: 'Take a break and enjoy a warm cup.' },
-  { name: 'Music', color: '#FFAB52', message: 'Let the rhythm lift your spirits!' }
+const giftColors = ['#fc7371', '#FFD666', '#8697F6', '#A9D66A', '#FFAB52'];
+
+const fallbackGifts = [
+  { title: 'Yarn', message: 'It is time to feel some warmth outside.' },
+  { title: 'Sunshine', message: 'Brighten your day with some outdoor time!' },
+  { title: 'Book', message: 'Time to dive into a new story.' },
+  { title: 'Tea', message: 'Take a break and enjoy a warm cup.' },
+  { title: 'Music', message: 'Let the rhythm lift your spirits!' }
 ];
 
-export default function BoxRevealPage({ onNavigateChat, onNavigateTheorem, onNavigateHome, energyLevel }: BoxRevealPageProps) {
-  // Select gift based on energy level
-  const giftIndex = Math.floor((energyLevel / 100) * gifts.length);
-  const selectedGift = gifts[Math.min(giftIndex, gifts.length - 1)];
+export default function BoxRevealPage({ onNavigateChat, onNavigateTheorem, onNavigateHome, energyLevel, recommendations, isLoading }: BoxRevealPageProps) {
+  // Select color based on energy level
+  const giftIndex = Math.min(Math.floor((energyLevel / 100) * giftColors.length), giftColors.length - 1);
+  const displayColor = giftColors[giftIndex];
+
+  // Pick the highest-confidence AI recommendation (stable across re-renders)
+  const recommendation = useMemo(() => {
+    if (recommendations && recommendations.length > 0) {
+      // Sort by confidence descending, pick the best one
+      const sorted = [...recommendations].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+      return sorted[0];
+    }
+    return null;
+  }, [recommendations]);
+
+  const fallback = fallbackGifts[giftIndex];
+  const displayTitle = recommendation?.title ?? fallback.title;
+  const displayMessage = recommendation?.description ?? fallback.message;
 
   // Background circles for decoration
   const circles = [
@@ -193,128 +212,163 @@ export default function BoxRevealPage({ onNavigateChat, onNavigateTheorem, onNav
   ];
 
   return (
-    <div className="bg-white relative size-full overflow-hidden">
-      {/* Background decoration circles */}
-      {circles.map((circle, index) => (
-        <motion.div
-          key={index}
-          className="absolute"
-          style={{
-            left: `${circle.left}px`,
-            top: `${circle.top}px`,
-            width: `${circle.size}px`,
-            height: `${circle.size}px`
-          }}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox={`0 0 ${circle.size} ${circle.size}`}>
-            <circle cx={circle.size / 2} cy={circle.size / 2} fill={circle.color} r={circle.size / 2} />
+    <div className="bg-white relative size-full overflow-hidden flex flex-col">
+      {/* Box visual area - fixed height */}
+      <div className="relative shrink-0" style={{ height: 490 }}>
+        {/* Background decoration circles */}
+        {circles.map((circle, index) => (
+          <motion.div
+            key={index}
+            className="absolute"
+            style={{
+              left: `${circle.left}px`,
+              top: `${circle.top}px`,
+              width: `${circle.size}px`,
+              height: `${circle.size}px`
+            }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox={`0 0 ${circle.size} ${circle.size}`}>
+              <circle cx={circle.size / 2} cy={circle.size / 2} fill={circle.color} r={circle.size / 2} />
+            </svg>
+          </motion.div>
+        ))}
+
+        {/* Shadow */}
+        <div className="absolute h-[49.737px] left-[172.04px] top-[413.38px] w-[123.934px]">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 123.934 49.7365">
+            <ellipse cx="61.9668" cy="24.8683" fill="var(--fill-0, #B4B4B4)" rx="61.9668" ry="24.8683" />
           </svg>
-        </motion.div>
-      ))}
+        </div>
 
-      {/* Shadow */}
-      <div className="absolute h-[49.737px] left-[172.04px] top-[413.38px] w-[123.934px]">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 123.934 49.7365">
-          <ellipse cx="61.9668" cy="24.8683" fill="var(--fill-0, #B4B4B4)" rx="61.9668" ry="24.8683" />
-        </svg>
-      </div>
+        <Frame3 />
 
-      <Frame3 />
-
-      {/* Box bottom */}
-      <motion.div
-        className="absolute h-[114.886px] left-[118.44px] top-[351.68px] w-[156.942px]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 156.798 114.738">
-          <g>
-            <path d={svgPaths.p3475ee00} fill="#96816F" fillOpacity="0.8" />
-            <path d={svgPaths.p2ef91080} fill="#CCB69B" />
-            <path d={svgPaths.p3c84da00} fill="#CCB69B" />
-            <path d={svgPaths.p9723740} fill="var(--fill-0, #FCE6CC)" />
-          </g>
-        </svg>
-      </motion.div>
-
-      {/* Gift item */}
-      <motion.div
-        className="absolute left-[164.7px] size-[89.689px] top-[309.83px]"
-        initial={{ scale: 0, rotate: -45, opacity: 0 }}
-        animate={{ scale: 1, rotate: 0, opacity: 1 }}
-        transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
-      >
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage11} />
-      </motion.div>
-
-      {/* Box top (lid) - moved to side */}
-      <motion.div
-        className="absolute h-[104.628px] left-[114.15px] top-[199.76px] w-[158.994px]"
-        initial={{ x: 0, y: 0, rotate: 0 }}
-        animate={{ x: -80, y: 60, rotate: -25 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-      >
-        <div className="absolute inset-[0.13%_0_0.19%_0]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 158.994 104.293">
+        {/* Box bottom */}
+        <motion.div
+          className="absolute h-[114.886px] left-[118.44px] top-[351.68px] w-[156.942px]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 156.798 114.738">
             <g>
-              <path d={svgPaths.p32183f0} fill="#96816F" />
-              <path d={svgPaths.p2c5dd500} fill="var(--fill-0, #B19984)" />
-              <path d={svgPaths.p387db900} fill="var(--fill-0, #B19984)" />
-              <path d={svgPaths.p2842c400} fill="var(--fill-0, #B19984)" />
+              <path d={svgPaths.p3475ee00} fill="#96816F" fillOpacity="0.8" />
+              <path d={svgPaths.p2ef91080} fill="#CCB69B" />
+              <path d={svgPaths.p3c84da00} fill="#CCB69B" />
+              <path d={svgPaths.p9723740} fill="var(--fill-0, #FCE6CC)" />
             </g>
           </svg>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Box label on bottom */}
-      <div className="absolute flex h-[34.658px] items-center justify-center left-[134.72px] top-[425.45px] w-[72.719px]">
-        <div className="flex-none rotate-[19.33deg]">
-          <Frame4 />
+        {/* Gift item */}
+        <motion.div
+          className="absolute left-[164.7px] size-[89.689px] top-[309.83px]"
+          initial={{ scale: 0, rotate: -45, opacity: 0 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
+        >
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage11} />
+        </motion.div>
+
+        {/* Box top (lid) - moved to side */}
+        <motion.div
+          className="absolute h-[104.628px] left-[114.15px] top-[199.76px] w-[158.994px]"
+          initial={{ x: 0, y: 0, rotate: 0 }}
+          animate={{ x: -80, y: 60, rotate: -25 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <div className="absolute inset-[0.13%_0_0.19%_0]">
+            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 158.994 104.293">
+              <g>
+                <path d={svgPaths.p32183f0} fill="#96816F" />
+                <path d={svgPaths.p2c5dd500} fill="var(--fill-0, #B19984)" />
+                <path d={svgPaths.p387db900} fill="var(--fill-0, #B19984)" />
+                <path d={svgPaths.p2842c400} fill="var(--fill-0, #B19984)" />
+              </g>
+            </svg>
+          </div>
+        </motion.div>
+
+        {/* Box label on bottom */}
+        <div className="absolute flex h-[34.658px] items-center justify-center left-[134.72px] top-[425.45px] w-[72.719px]">
+          <div className="flex-none rotate-[19.33deg]">
+            <Frame4 />
+          </div>
         </div>
       </div>
 
-      {/* Congratulations text */}
-      <motion.div
-        className="-translate-x-1/2 absolute font-['Istok_Web:Regular',sans-serif] leading-[0] left-[203.43px] not-italic text-[#3a3a3a] text-[14.754px] text-center top-[521.83px] w-[128.01px] whitespace-pre-wrap"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-      >
-        <p className="leading-[normal] mb-0">Congratulations!</p>
-        <p>
-          <span className="leading-[normal]">{`You got a `}</span>
-          <span className="font-['Istok_Web:Bold',sans-serif] leading-[normal] not-italic" style={{ color: selectedGift.color }}>
-            {selectedGift.name}
-          </span>
-          <span className="font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic text-black"> !</span>
-        </p>
-      </motion.div>
+      {/* Text content area - flows below the box */}
+      <div className="flex-1 flex flex-col items-center justify-center px-[40px] overflow-y-auto min-h-0">
+        {isLoading ? (
+          <motion.div
+            className="flex flex-col items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="w-6 h-6 border-2 border-[#A9D66A] border-t-transparent rounded-full animate-spin" />
+            <p className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#999] text-center">
+              Crafting your joy recommendation...
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            {/* Congratulations */}
+            <motion.div
+              className="font-['Istok_Web:Regular',sans-serif] text-[15px] text-[#3a3a3a] text-center leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <p className="mb-1">Congratulations!</p>
+              <p>
+                {`You got `}
+                <span className="font-['Istok_Web:Bold',sans-serif]" style={{ color: displayColor }}>
+                  {displayTitle}
+                </span>
+                {` !`}
+              </p>
+            </motion.div>
 
-      {/* Message */}
-      <motion.p
-        className="-translate-x-1/2 absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[200.58px] not-italic text-[#3a3a3a] text-[14.754px] text-center top-[611.51px] w-[265.805px] whitespace-pre-wrap"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-      >
-        {selectedGift.message}
-      </motion.p>
+            {/* Description */}
+            <motion.p
+              className="font-['Istok_Web:Regular',sans-serif] text-[14px] text-[#3a3a3a] text-center leading-relaxed mt-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              {displayMessage}
+            </motion.p>
 
-      {/* Back to Home button */}
-      <motion.button
-        onClick={onNavigateHome}
-        className="absolute left-[126.5px] top-[680px] w-[140px] h-[50px] bg-[#A9D66A] rounded-[25px] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-transform hover:scale-105 active:scale-95"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 1 }}
-      >
-        <p className="font-['Istok_Web:Bold',sans-serif] text-[16px] text-white">Back to Home</p>
-      </motion.button>
+            {/* Energy match reason */}
+            {recommendation?.energy_match && (
+              <motion.p
+                className="font-['Istok_Web:Regular',sans-serif] text-[12px] text-[#999] text-center mt-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 1 }}
+              >
+                {recommendation.energy_match}
+              </motion.p>
+            )}
 
+            {/* Back to Home button */}
+            <motion.button
+              onClick={onNavigateHome}
+              className="mt-4 w-[140px] h-[50px] bg-[#A9D66A] rounded-[25px] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] transition-transform hover:scale-105 active:scale-95 shrink-0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+            >
+              <p className="font-['Istok_Web:Bold',sans-serif] text-[16px] text-white">Back to Home</p>
+            </motion.button>
+          </>
+        )}
+      </div>
+
+      {/* Bottom nav */}
       <Component1 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateHome={onNavigateHome} />
     </div>
   );
