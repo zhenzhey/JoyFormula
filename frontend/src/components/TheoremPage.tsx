@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import svgPaths from "../imports/svg-svkz6eqmyl";
 import joyRepoTitle from "../assets/joyrepo.png";
 import { insightsApi, cardsApi } from '../api';
-import type { JoyInsight, JoyCard } from '../types';
+import type { JoyInsight } from '../types';
 
 //theorem page with card decks
 
-function Frame9({ insight }: { insight?: JoyInsight }) {
+function Frame9({ insight, onClick, isClickable }: { insight?: JoyInsight; onClick?: () => void; isClickable?: boolean }) {
   if (!insight) return null;
   
   const displayText = insight.statement || insight.insight_text;
@@ -18,7 +18,10 @@ function Frame9({ insight }: { insight?: JoyInsight }) {
   });
   
   return (
-    <div className="absolute h-[251.21px] left-[47.5px] top-[299.53px] w-[297.695px]">
+    <div
+      className={`absolute h-[251.21px] left-[47.5px] top-[299.53px] w-[297.695px] z-[5] ${isClickable ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="absolute flex h-[251.21px] items-center justify-center left-0 top-0 w-[297.695px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "0" } as React.CSSProperties}>
         <div className="flex-none rotate-[11.48deg]">
           <div className="bg-[#a9d66a] h-[203.023px] rounded-[8.154px] shadow-[0px_3.261px_3.261px_0px_rgba(0,0,0,0.25)] w-[262.544px]" />
@@ -471,25 +474,21 @@ interface TheoremPageProps {
   onNavigateHome: () => void;
   onNavigateRepository: () => void;
   onEditInsight?: (insight: JoyInsight) => void;
-  onNavigateTheoremEdit?: () => void;
 }
 
-export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onEditInsight, onNavigateTheoremEdit }: TheoremPageProps) {
+export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onEditInsight }: TheoremPageProps) {
   const [insights, setInsights] = useState<JoyInsight[]>([]);
   const [confirmedInsights, setConfirmedInsights] = useState<JoyInsight[]>([]);
-  const [latestCard, setLatestCard] = useState<JoyCard | null>(null);
   const [totalCards, setTotalCards] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // 获取最新的JoyCard和总数
   useEffect(() => {
     const loadLatestCard = async () => {
       try {
         const response = await cardsApi.getCards(0, 1);
-        if (response.cards && response.cards.length > 0) {
-          setLatestCard(response.cards[0]);
-        }
         setTotalCards(response.total || 0);
       } catch (error) {
         console.error('Failed to load latest card:', error);
@@ -500,117 +499,142 @@ export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigate
   }, []);
 
   // 获取定律列表
-  useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        const data = await insightsApi.getInsights();
-        setInsights(data);
-        // 过滤出已确认的定律
-        const confirmed = data.filter(item => item.is_confirmed && !item.is_rejected);
-        setConfirmedInsights(confirmed);
-      } catch (error) {
-        console.error('Failed to fetch insights:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInsights();
-  }, []);
-
-  // 生成新定律
-  const handleGenerateInsights = async () => {
-    setIsGenerating(true);
+  const fetchInsights = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await insightsApi.generateInsights();
-      setInsights(prev => [...response.insights, ...prev]);
-      alert(response.message);
+      const data = await insightsApi.getInsights();
+      setInsights(data);
+      // 过滤出未被拒绝的定律
+      const confirmed = data.filter(item => !item.is_rejected);
+      setConfirmedInsights(confirmed);
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'Failed to generate insights';
-      alert(errorMsg);
-      console.error('Failed to generate insights:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || 'Failed to fetch insights';
+      setError(errorMsg);
+      console.error('Failed to fetch insights:', error);
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  useEffect(() => {
+    if (confirmedInsights.length === 0) {
+      setCurrentIndex(0);
+      return;
+    }
+    setCurrentIndex(prev => Math.min(prev, confirmedInsights.length - 1));
+  }, [confirmedInsights.length]);
+
   return (
     <div className="bg-white relative size-full" data-name="Thereom">
-      {confirmedInsights.length > 0 && <Frame9 insight={confirmedInsights[0]} />}
+      {confirmedInsights.length > 0 && (
+        <Frame9
+          insight={confirmedInsights[currentIndex]}
+          onClick={onEditInsight ? () => onEditInsight(confirmedInsights[currentIndex]) : undefined}
+          isClickable={Boolean(onEditInsight)}
+        />
+      )}
+      {confirmedInsights.length > 0 && (
+        <div className="absolute left-0 right-0 top-[255px] z-[6] text-center pointer-events-none">
+          <p className="text-[12px] text-[#695d52] font-['Istok_Web:Regular',sans-serif]">
+            Joy Theorem {currentIndex + 1} / {confirmedInsights.length}
+          </p>
+        </div>
+      )}
+      {confirmedInsights.length > 1 && !isLoading && insights.length > 0 && (
+        <>
+          <button
+            aria-label="Previous theorem"
+            className={`absolute left-[18px] top-[420px] z-[6] h-[28px] w-[28px] rounded-full border border-[#e5e5e5] bg-white/90 shadow-sm transition-opacity ${currentIndex === 0 ? 'opacity-40 cursor-not-allowed' : 'opacity-100 hover:bg-white'}`}
+            onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+            disabled={currentIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4 text-[#695d52]" />
+          </button>
+          <button
+            aria-label="Next theorem"
+            className={`absolute right-[18px] top-[420px] z-[6] h-[28px] w-[28px] rounded-full border border-[#e5e5e5] bg-white/90 shadow-sm transition-opacity ${currentIndex === confirmedInsights.length - 1 ? 'opacity-40 cursor-not-allowed' : 'opacity-100 hover:bg-white'}`}
+            onClick={() => setCurrentIndex(prev => Math.min(confirmedInsights.length - 1, prev + 1))}
+            disabled={currentIndex === confirmedInsights.length - 1}
+          >
+            <ChevronRight className="h-4 w-4 text-[#695d52]" />
+          </button>
+        </>
+      )}
       <Frame8 />
-      <div className="absolute flex h-[388.465px] items-center justify-center left-[138.5px] top-[64.53px] w-[386.334px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "959" } as React.CSSProperties}>
+      <div className="absolute flex h-[388.465px] items-center justify-center left-[138.5px] top-[64.53px] w-[386.334px] pointer-events-none" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "959" } as React.CSSProperties}>
         <div className="flex-none rotate-[-48.45deg]">
           <Frame12 />
         </div>
       </div>
-      <div className="absolute flex h-[306.921px] items-center justify-center left-[-116.5px] top-[496.53px] w-[327.324px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "959" } as React.CSSProperties}>
+      <div className="absolute flex h-[306.921px] items-center justify-center left-[-116.5px] top-[496.53px] w-[327.324px] pointer-events-none" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "959" } as React.CSSProperties}>
         <div className="flex-none rotate-[-9.8deg]">
           <Frame11 />
         </div>
       </div>
       <Frame10 />
-      
+
       {/* 暗色背景遮罩 */}
-      {(isLoading || insights.length === 0 || insights.length > 0) && (
+      {(isLoading || confirmedInsights.length === 0 || error) && (
         <div className="absolute inset-0 bg-black/40 z-10" style={{ top: 0, bottom: 0 }} />
       )}
       
       {/* 中心状态卡片 */}
-      <div className="absolute inset-0 flex items-center justify-center px-8 pointer-events-none z-20" style={{ top: '100px', bottom: '150px' }}>
-        <div className="bg-white rounded-lg shadow-2xl p-10 py-14 max-w-sm w-full pointer-events-auto min-h-[350px] flex flex-col justify-center">
-          {isLoading ? (
-            <div className="text-center">
-              <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif] text-lg">Loading...</p>
-            </div>
-          ) : insights.length === 0 ? (
-            <div className="text-center space-y-6">
-              <div className="space-y-3">
-                <p className="text-2xl font-['Itim:Regular',sans-serif] text-[#2b2a2a]">No Theorem Yet</p>
-                <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif]">
-                  Start chatting to generate your personalized joy theorem!
-                </p>
-                {totalCards < 5 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-500 font-['Istok_Web:Regular',sans-serif]">
-                      You have <span className="font-semibold text-[#FEB05D]">{totalCards}</span> {totalCards === 1 ? 'card' : 'cards'}
-                    </p>
-                    <p className="text-sm text-gray-500 font-['Istok_Web:Regular',sans-serif] mt-1">
-                      Need <span className="font-semibold text-[#FEB05D]">{5 - totalCards}</span> more {(5 - totalCards) === 1 ? 'card' : 'cards'} to generate your first theorem
-                    </p>
-                  </div>
-                )}
+      {(isLoading || confirmedInsights.length === 0 || error) && (
+        <div className="absolute inset-0 flex items-center justify-center px-8 pointer-events-none z-20" style={{ top: '100px', bottom: '150px' }}>
+          <div className="bg-white rounded-lg shadow-2xl p-10 py-14 max-w-sm w-full pointer-events-auto min-h-[350px] flex flex-col justify-center">
+            {isLoading ? (
+              <div className="text-center">
+                <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif] text-lg">Loading...</p>
               </div>
-              <button
-                onClick={onNavigateChat}
-                className="bg-[#FEB05D] text-white font-['Istok_Web:Regular',sans-serif] px-8 py-3 rounded-lg hover:bg-[#fd9d3d] transition-colors shadow-md"
-              >
-                Get More Joy
-              </button>
-            </div>
-          ) : (
-            <div className="text-center space-y-6">
-              <div className="space-y-2">
-                <p className="text-2xl font-['Itim:Regular',sans-serif] text-[#2b2a2a]">Theorem Generated!</p>
-                <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif]">
-                  You have {insights.length} joy theorem{insights.length > 1 ? 's' : ''} ready to explore.
-                </p>
+            ) : error ? (
+              <div className="text-center space-y-6">
+                <div className="space-y-3">
+                  <p className="text-2xl font-['Itim:Regular',sans-serif] text-red-600">Connection Error</p>
+                  <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif] text-sm">
+                    {error}
+                  </p>
+                </div>
+                <button
+                  onClick={fetchInsights}
+                  className="bg-[#FEB05D] text-white font-['Istok_Web:Regular',sans-serif] px-8 py-3 rounded-lg hover:bg-[#fd9d3d] transition-colors shadow-md"
+                >
+                  Retry
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  if (insights.length > 0 && onEditInsight) {
-                    onEditInsight(insights[0]);
-                  } else if (onNavigateTheoremEdit) {
-                    onNavigateTheoremEdit();
-                  }
-                }}
-                className="bg-[#A9D66A] text-white font-['Istok_Web:Regular',sans-serif] px-8 py-3 rounded-lg hover:bg-[#95c156] transition-colors shadow-md"
-              >
-                Check it out
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="text-center space-y-6">
+                <div className="space-y-3">
+                  <p className="text-2xl font-['Itim:Regular',sans-serif] text-[#2b2a2a]">No Theorem Yet</p>
+                  <p className="text-gray-600 font-['Istok_Web:Regular',sans-serif]">
+                    Start chatting to generate your personalized joy theorem!
+                  </p>
+                  {totalCards < 5 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-sm text-gray-500 font-['Istok_Web:Regular',sans-serif]">
+                        You have <span className="font-semibold text-[#FEB05D]">{totalCards}</span> {totalCards === 1 ? 'card' : 'cards'}
+                      </p>
+                      <p className="text-sm text-gray-500 font-['Istok_Web:Regular',sans-serif] mt-1">
+                        Need <span className="font-semibold text-[#FEB05D]">{5 - totalCards}</span> more {(5 - totalCards) === 1 ? 'card' : 'cards'} to generate your first theorem
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={onNavigateChat}
+                  className="bg-[#FEB05D] text-white font-['Istok_Web:Regular',sans-serif] px-8 py-3 rounded-lg hover:bg-[#fd9d3d] transition-colors shadow-md"
+                >
+                  Get More Joy
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       
       <Component onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateRepository={onNavigateRepository} />
       <Frame6 />

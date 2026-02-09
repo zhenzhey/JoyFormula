@@ -886,7 +886,7 @@ You are "Joy", analyzing user happiness patterns to generate "Joy Theorems" - de
 {cards_json}
 
 ## Input
-User's joy cards in JSON format with fields: scene, people, event, drive, sensation, etc.
+User's joy cards in JSON format with fields: scene, people, event, trigger, sensation, raw_input etc.
 
 ## Output Format (STRICT)
 
@@ -898,8 +898,8 @@ User's joy cards in JSON format with fields: scene, people, event, drive, sensat
       "statement": "Concise joy rule with key details (10-15 words ideal)",
       "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
       "evidence": [
-        {{"card_id": "card_001", "quote": "brief user quote"}},
-        {{"card_id": "card_003", "quote": "brief user quote"}}
+        {{"card_id": "card_001", "quote": "brief excerpt from card's raw_input"}},
+        {{"card_id": "card_003", "quote": "brief excerpt from card's raw_input"}}
       ],
       "pattern_type": "Category label"
     }}
@@ -958,12 +958,15 @@ A replicable joy formula - **specific enough to be insightful, concise enough to
 - `["happiness", "positivity", "good vibes"]` (too generic)
 
 ### 4. Evidence
-Brief quotes (1 sentence) from user's cards that support the pattern.
+**CRITICAL: Extract quotes ONLY from the `raw_input` field of each card.**
+
+Brief excerpts (1 sentence or key phrase) from user's **original words** in the `raw_input` field.
 
 **Must include:**
 - **Minimum 3 evidence items** (matching the 3+ cards requirement)
 - Accurate `card_id` references
-- User's original words (brief excerpts)
+- **User's exact words from `raw_input` field** - do NOT use summarized or processed text from other fields
+
 
 ### 5. Pattern Types
 Choose the best fit:
