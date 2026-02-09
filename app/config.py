@@ -4,7 +4,7 @@ from typing import Literal
 
 class Settings(BaseSettings):
     # 数据库
-    DATABASE_URL: str = "sqlite://"
+    DATABASE_URL: str = "sqlite:///./joyformula.db"
 
     # AI 提供商配置
     AI_PROVIDER: Literal["anthropic", "openai", "gemini", "custom"] = "anthropic"
