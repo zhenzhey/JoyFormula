@@ -8,8 +8,8 @@ import svgPathsGiftBox from "../imports/svg-bkazuxlag9";
 import imgImage9 from "figma:asset/f232edc536b9310bdca4bcd53c1aee8a1be5c1d1.png";
 import joyFrameTitle from "../assets/joyframe.png";
 import joyBlindboxTitle from "../assets/joyblindbox .png";
-import { cardsApi } from '../api';
-import type { JoyCard } from '../types';
+import { cardsApi, insightsApi } from '../api';
+import type { JoyCard, JoyInsight } from '../types';
 
 type CardType = 'scene' | 'people' | 'trigger' | 'senses' | 'feeling' | null;
 
@@ -85,24 +85,25 @@ function TheoremCardFrame() {
   );
 }
 
-function TheoremCardNotification() {
+function TheoremCardNotification({ count }: { count: number }) {
   return (
     <div className="absolute bg-[#f0817f] content-stretch flex flex-col items-center justify-center left-[54.63px] px-[4.892px] py-[1.631px] rounded-[6.93px] size-[13.861px] top-[1.63px]">
-      <p className="font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[8.474px] text-white">1</p>
+      <p className="font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[8.474px] text-white">{count}</p>
     </div>
   );
 }
 
-function TheoremCard({ onNavigateTheoremEdit }: { onNavigateTheoremEdit: () => void }) {
+function TheoremCard({ onNavigateTheoremEdit, pendingCount }: { onNavigateTheoremEdit: () => void; pendingCount: number }) {
+  const isEnabled = pendingCount > 0;
   return (
     <motion.button
-      onClick={onNavigateTheoremEdit}
+      onClick={isEnabled ? onNavigateTheoremEdit : undefined}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 0.5 }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-        className="absolute h-[63.602px] w-[97.027px] cursor-pointer"
+      whileHover={isEnabled ? { scale: 1.05 } : undefined}
+      whileTap={isEnabled ? { scale: 0.95 } : undefined}
+        className={`absolute h-[63.602px] w-[97.027px] ${isEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
         style={{ left: "82.35px", top: "700px" }}
     >
       {/* Shadow */}
@@ -120,7 +121,7 @@ function TheoremCard({ onNavigateTheoremEdit }: { onNavigateTheoremEdit: () => v
         </div>
           <div className="absolute bg-[#e6e6e6] h-[46.753px] left-[4.6px] rounded-[2.122px] shadow-[0px_0.849px_0.849px_0px_rgba(0,0,0,0.25)] top-[6.38px] w-[60.46px]" />
         <TheoremCardFrame />
-        <TheoremCardNotification />
+        {isEnabled && <TheoremCardNotification count={pendingCount} />}
       </div>
     </motion.button>
   );
@@ -844,6 +845,7 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
   const [selectedCard, setSelectedCard] = useState<CardType>(null);
   const [latestCard, setLatestCard] = useState<JoyCard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingInsightCount, setPendingInsightCount] = useState(0);
 
   // Load latest joy card
   useEffect(() => {
@@ -861,6 +863,20 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
     };
 
     loadLatestCard();
+  }, []);
+
+  useEffect(() => {
+    const loadPendingInsights = async () => {
+      try {
+        const insights = await insightsApi.getInsights();
+        const pending = insights.filter(item => !item.is_confirmed && !item.is_rejected);
+        setPendingInsightCount(pending.length);
+      } catch (error) {
+        console.error('Failed to load insights:', error);
+      }
+    };
+
+    loadPendingInsights();
   }, []);
 
   return (
@@ -884,7 +900,7 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[256.02px] not-italic text-[8.154px] text-black top-[163.89px] w-[140px] whitespace-pre-wrap">This is your 96th JoyFormula.</p>
       
       {/* Theorem Card and Gift Box */}
-      <TheoremCard onNavigateTheoremEdit={onNavigateTheoremEdit} />
+      <TheoremCard onNavigateTheoremEdit={onNavigateTheoremEdit} pendingCount={pendingInsightCount} />
       <GiftBox onNavigateGiftBox={onNavigateGiftBox} />
       
       <Component1 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />

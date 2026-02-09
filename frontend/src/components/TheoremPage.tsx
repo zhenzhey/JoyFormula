@@ -461,9 +461,10 @@ interface TheoremPageProps {
   onNavigateChat: () => void;
   onNavigateHome: () => void;
   onNavigateRepository: () => void;
+  onEditInsight?: (insight: JoyInsight) => void;
 }
 
-export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository }: TheoremPageProps) {
+export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onEditInsight }: TheoremPageProps) {
   const [insights, setInsights] = useState<JoyInsight[]>([]);
   const [latestCard, setLatestCard] = useState<JoyCard | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
 import svgPaths from "../imports/svg-yq6vd11jyo";
+import { insightsApi } from '../api';
+import type { JoyInsight } from '../types';
 
 //Theorem page with design only
 function Frame4() {
@@ -11,11 +14,14 @@ function Frame4() {
   );
 }
 
-function Frame5() {
+function Frame5({ onClick }: { onClick: () => void }) {
   return (
-    <div className="bg-[#ddd] content-stretch flex h-[24.344px] items-center justify-center px-[33.387px] py-[3.478px] relative rounded-[6.956px] shrink-0 w-[101.551px]">
+    <button 
+      onClick={onClick}
+      className="bg-[#ddd] hover:bg-[#ccc] active:scale-95 transition-all content-stretch flex h-[24.344px] items-center justify-center px-[33.387px] py-[3.478px] relative rounded-[6.956px] shrink-0 w-[101.551px]"
+    >
       <p className="font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic relative shrink-0 text-[11.824px] text-black">Delete</p>
-    </div>
+    </button>
   );
 }
 
@@ -30,11 +36,11 @@ function Frame6({ onClick }: { onClick: () => void }) {
   );
 }
 
-function Frame7({ onSubmit }: { onSubmit: () => void }) {
+function Frame7({ onDelete, onSubmit }: { onDelete: () => void; onSubmit: () => void }) {
   return (
     <div className="absolute content-stretch flex gap-[6.26px] items-center left-[30.17px] top-[161.44px]">
       <Frame4 />
-      <Frame5 />
+      <Frame5 onClick={onDelete} />
       <Frame6 onClick={onSubmit} />
     </div>
   );
@@ -102,10 +108,10 @@ function Frame() {
   );
 }
 
-function Frame8({ onSubmit }: { onSubmit: () => void }) {
+function Frame8({ insight, onDelete, onSubmit }: { insight?: JoyInsight; onDelete: () => void; onSubmit: () => void }) {
   return (
     <div className="absolute bg-[rgba(255,255,255,0.1)] h-[208.73px] left-[13.05px] rounded-[8.154px] shadow-[3.261px_3.261px_14.676px_0px_rgba(109,109,109,0.25)] top-[309.02px] w-[366.093px]">
-      <Frame7 onSubmit={onSubmit} />
+      <Frame7 onDelete={onDelete} onSubmit={onSubmit} />
       <div className="absolute flex h-[23.352px] items-center justify-center left-[59.52px] top-[31.8px] w-[108.94px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "133" } as React.CSSProperties}>
         <div className="flex-none rotate-[0.08deg]">
           <Frame />
@@ -115,7 +121,9 @@ function Frame8({ onSubmit }: { onSubmit: () => void }) {
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[168.78px] not-italic text-[12.658px] text-black top-[35.88px]">is...</p>
       <div className="absolute flex h-[60.59px] items-center justify-center left-[51.37px] top-[68.41px] w-[286.435px]" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "19" } as React.CSSProperties}>
         <div className="flex-none rotate-[-0.12deg]">
-          <p className="font-['Itim:Regular',sans-serif] leading-[normal] not-italic relative text-[#3a3a3a] text-[16.307px] w-[286.312px] whitespace-pre-wrap">{`"A quiet room, a golden beam, a heart at rest. Today, the light reminded me that I am enough."`}</p>
+          <p className="font-['Itim:Regular',sans-serif] leading-[normal] not-italic relative text-[#3a3a3a] text-[16.307px] w-[286.312px] whitespace-pre-wrap">
+            {insight?.insight_text || 'No pending insights yet.'}
+          </p>
         </div>
       </div>
       <div className="absolute h-[2.446px] left-[62.78px] top-[53px] w-[97.842px]">
@@ -240,8 +248,74 @@ interface TheoremEditPageProps {
   onNavigateRepository: () => void;
   onSubmit: () => void;
 }
+interface TheoremEditPageProps {
+  insight?: JoyInsight;
+  onNavigateChat: () => void;
+  onNavigateHome: () => void;
+  onNavigateRepository: () => void;
+  onBack: () => void;
+}
 
-export default function TheoremEditPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onSubmit }: TheoremEditPageProps) {
+export default function TheoremEditPage({ insight, onNavigateChat, onNavigateHome, onNavigateRepository, onBack }: TheoremEditPageProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentInsight, setCurrentInsight] = useState<JoyInsight | undefined>(insight);
+
+  useEffect(() => {
+    if (insight) {
+      setCurrentInsight(insight);
+      return;
+    }
+
+    const loadFirstPendingInsight = async () => {
+      try {
+        const data = await insightsApi.getInsights();
+        const pending = data.find(item => !item.is_confirmed && !item.is_rejected);
+        setCurrentInsight(pending);
+      } catch (error) {
+        console.error('Failed to load insights:', error);
+      }
+    };
+
+    loadFirstPendingInsight();
+  }, [insight]);
+
+  const handleDelete = async () => {
+    if (!currentInsight) return;
+    
+    if (!window.confirm('确认删除本条定律吗？')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await insightsApi.rejectInsight(currentInsight.id);
+      alert('已删除');
+      onBack();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to delete insight';
+      alert(errorMsg);
+      console.error('Failed to delete insight:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!currentInsight) return;
+    
+    setIsLoading(true);
+    try {
+      await insightsApi.confirmInsight(currentInsight.id);
+      alert('已确认');
+      onBack();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to confirm insight';
+      alert(errorMsg);
+      console.error('Failed to confirm insight:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="bg-white relative size-full" data-name="Thereom">
       <div className="absolute left-[321.25px] size-[47.29px] top-[221.78px]">
@@ -264,7 +338,7 @@ export default function TheoremEditPage({ onNavigateChat, onNavigateHome, onNavi
           <circle cx="26.9066" cy="26.9066" fill="var(--fill-0, #FFE6CB)" id="Ellipse 36" r="26.9066" />
         </svg>
       </div>
-      <Frame8 onSubmit={onSubmit} />
+      <Frame8 insight={currentInsight} onDelete={handleDelete} onSubmit={handleSubmit} />
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[175.3px] not-italic text-[12.23px] text-black top-[53.81px]">
         Insights
       </p>

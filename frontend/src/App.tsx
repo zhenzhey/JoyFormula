@@ -8,12 +8,13 @@ import TheoremEditPage from './components/TheoremEditPage';
 import EnergySelectionPage from './components/EnergySelectionPage';
 import BoxOpeningPage from './components/BoxOpeningPage';
 import BoxRevealPage from './components/BoxRevealPage';
-import type { Recommendation } from './types';
+import type { Recommendation, JoyInsight } from './types';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'chat' | 'home' | 'repository' | 'theorem' | 'theoremEdit' | 'energySelection' | 'boxOpening' | 'boxReveal'>('home');
   const [energyLevel, setEnergyLevel] = useState(50);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [selectedInsight, setSelectedInsight] = useState<JoyInsight | undefined>();
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -94,6 +95,10 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateRepository={() => setCurrentPage('repository')}
               onNavigateHome={() => setCurrentPage('home')}
+                onEditInsight={(insight) => {
+                  setSelectedInsight(insight);
+                  setCurrentPage('theoremEdit');
+                }}
             />
           </motion.div>
         )}
@@ -109,10 +114,14 @@ export default function App() {
             className="absolute inset-0"
           >
             <TheoremEditPage 
+                insight={selectedInsight}
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateRepository={() => setCurrentPage('repository')}
               onNavigateHome={() => setCurrentPage('home')}
-              onSubmit={() => setCurrentPage('theorem')}
+                onBack={() => {
+                  setCurrentPage('theorem');
+                  setSelectedInsight(undefined);
+                }}
             />
           </motion.div>
         )}
