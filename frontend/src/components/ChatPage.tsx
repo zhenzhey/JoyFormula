@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { MessageCircle, FileText, Smile, BarChart3, Settings as SettingsIcon } from 'lucide-react';
 import svgPaths from "../imports/svg-q9e9i9q3px";
 import imgImage5 from "figma:asset/5e23b583e6ceb3250bf5714b464a5fc90e5eba62.png";
 import { chatApi } from '../api';
@@ -114,26 +114,12 @@ interface InputBarProps {
 
 function InputBar({ onSubmit }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
     if (inputValue.trim()) {
       onSubmit(inputValue, false);
       setInputValue('');
-    }
-  };
-
-  const toggleRecording = () => {
-    if (!isRecording) {
-      setIsRecording(true);
-      setTimeout(() => {
-        setIsRecording(false);
-        const voiceMessage = "I was reading by the window and the warm sunlight made me feel peaceful.";
-        onSubmit(voiceMessage, true);
-      }, 2000);
-    } else {
-      setIsRecording(false);
     }
   };
 
@@ -148,65 +134,28 @@ function InputBar({ onSubmit }: InputBarProps) {
           onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
           placeholder="Type your happy moment..."
           className="absolute bg-white h-[23.645px] left-[42.4px] rounded-[8.154px] top-[2.45px] w-[225.853px] px-3 text-[11px] outline-none border-none"
-          disabled={isRecording}
         />
         <button
           onClick={handleSubmit}
-          disabled={!inputValue.trim() || isRecording}
+          disabled={!inputValue.trim()}
           className="absolute bg-[#bababa] hover:bg-[#a0a0a0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-[23.645px] left-[277.22px] rounded-[8.154px] top-[3.26px] w-[57.89px]"
         >
           <p className="font-['Istok_Web:Bold',sans-serif] leading-[normal] not-italic text-[9.784px] text-black">Submit</p>
         </button>
         
         <button
-          onClick={toggleRecording}
-          className={`absolute content-stretch flex h-[29.655px] items-center left-0 px-[7.009px] py-[5.392px] rounded-[53.918px] top-0 w-[33.429px] transition-all ${
-            isRecording 
-              ? 'bg-red-500 animate-pulse' 
-              : 'bg-[#cbcbcb] hover:bg-[#b0b0b0]'
-          }`}
+          disabled
+          title="Coming soon"
+          className="absolute content-stretch flex h-[29.655px] items-center left-0 px-[7.009px] py-[5.392px] rounded-[53.918px] top-0 w-[33.429px] bg-[#cbcbcb] opacity-50 cursor-not-allowed"
         >
-          {isRecording ? (
-            <MicOff className="size-[18px] text-white" />
-          ) : (
-            <div className="relative shrink-0 size-[18.332px]">
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <img alt="Microphone" className="absolute left-[0.24%] max-w-none size-full top-0" src={imgImage5} />
-              </div>
+          <div className="relative shrink-0 size-[18.332px]">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="Microphone" className="absolute left-[0.24%] max-w-none size-full top-0" src={imgImage5} />
             </div>
-          )}
+          </div>
         </button>
       </div>
       
-      <AnimatePresence>
-        {isRecording && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute left-[80px] top-[5px] flex items-center gap-2"
-          >
-            <div className="flex gap-1">
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8, delay: 0 }}
-                className="w-1 h-3 bg-red-500 rounded-full"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}
-                className="w-1 h-3 bg-red-500 rounded-full"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}
-                className="w-1 h-3 bg-red-500 rounded-full"
-              />
-            </div>
-            <p className="text-[10px] text-red-500 font-['Istok_Web:Regular',sans-serif]">Recording...</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
