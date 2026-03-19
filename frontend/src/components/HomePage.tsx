@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, FileText, Smile, BarChart3, BatteryCharging as BatteryChargingIcon } from 'lucide-react';
+import BottomNavBar from './BottomNavBar';
 import svgPaths from "../imports/svg-bb8qo2f75h";
 import svgPaths2 from "../imports/svg-qg7g61fb9c";
 import svgPathsTheorem from "../imports/svg-8blp8pu86r";
 import svgPathsGiftBox from "../imports/svg-bkazuxlag9";
-import imgImage9 from "figma:asset/f232edc536b9310bdca4bcd53c1aee8a1be5c1d1.png";
 import joyFrameTitle from "../assets/joyframe.png";
 import joyBlindboxTitle from "../assets/joyblindbox .png";
 import { cardsApi, insightsApi } from '../api';
-import type { JoyCard, JoyInsight } from '../types';
+import type { JoyCard } from '../types';
 
 type CardType = 'scene' | 'people' | 'trigger' | 'senses' | 'feeling' | null;
 
@@ -783,70 +782,57 @@ function Frame2() {
   );
 }
 
-function Frame8() {
-  return (
-    <div className="absolute font-['Instrument_Sans:Regular',sans-serif] font-normal h-[37.445px] left-[110.07px] text-black top-[141.06px] w-[27.737px]">
-      <p className="absolute leading-[normal] left-0 text-[29.695px] top-[1.39px]" style={{ fontVariationSettings: "'wdth' 100" }}>
-        8
-      </p>
-      <p className="absolute font-['Instrument_Sans:SemiBold',sans-serif] font-semibold leading-[0] left-[15.26px] text-[0px] top-0" style={{ fontVariationSettings: "'wdth' 100" }}>
-        <span className="leading-[normal] text-[17.132px]" style={{ fontVariationSettings: "'wdth' 100" }}>{` `}</span>
-        <span className="leading-[normal] text-[8.001px]" style={{ fontVariationSettings: "'wdth' 100" }}>
-          °C
-        </span>
-      </p>
-    </div>
-  );
-}
 
-function Component2() {
+function Frame8({ temperature, weatherEmoji }: { temperature: number | null; weatherEmoji: string }) {
   return (
-    <div className="absolute bottom-[-0.1px] h-[35.78px] left-0 right-[0.27%]" data-name="4底部横条">
-      <div className="-translate-x-1/2 absolute bg-black bottom-[8.2px] h-[5.262px] left-[calc(50%-0.32px)] rounded-[105.235px] w-[141.015px]" data-name="Home Indicator" />
-    </div>
-  );
-}
-
-
-function Frame15({ onNavigateChat, onNavigateTheorem, onNavigateRepository }: { onNavigateChat: () => void; onNavigateTheorem: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute content-stretch flex gap-[38.047px] items-end left-[54.63px] top-[14.68px]">
-      <button
-        onClick={onNavigateChat}
-        className="relative shrink-0 transition-transform hover:scale-110 active:scale-95"
+    <div className="absolute flex items-center" style={{ left: '35.86px', top: '131px' }}>
+      <span className="text-[16px] leading-none">{weatherEmoji}</span>
+      <span
+        className="font-['Arimo:Regular',sans-serif] font-normal leading-none"
+        style={{ color: '#8697f6', fontSize: '29.695px' }}
       >
-        <MessageCircle className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={onNavigateTheorem}
-        className="relative shrink-0 transition-transform hover:scale-110 active:scale-95"
+        {temperature ?? '--'}
+      </span>
+      <span
+        className="font-['Arimo:Bold',sans-serif] font-bold self-start leading-none"
+        style={{ color: '#a28f7e', fontSize: '8px', marginTop: '2px' }}
       >
-        <FileText className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button className="relative shrink-0">
-        <Smile className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={onNavigateRepository}
-        className="relative transition-transform hover:scale-110 active:scale-95"
-      >
-        <BarChart3 className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button className="relative shrink-0">
-        <BatteryChargingIcon className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
+        °C
+      </span>
     </div>
   );
 }
 
-function Component1({ onNavigateChat, onNavigateTheorem, onNavigateRepository }: { onNavigateChat: () => void; onNavigateTheorem: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute bg-[rgba(255,255,255,0)] h-[84.797px] left-[-1.63px] top-[766.43px] w-[394.631px]" data-name="标签栏">
-      <Component2 />
-      <Frame15 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
-    </div>
-  );
+function getOrdinal(n: number): string {
+  if (n >= 11 && n <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
 }
+
+function formatDate(date: Date): string {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const suffix = getOrdinal(day).replace(String(day), '');
+  return `${month} ${day}${suffix}, ${year}`;
+}
+
+function getWeatherEmoji(weatherCode: number): string {
+  if (weatherCode === 0) return '☀️';
+  if (weatherCode <= 3) return '⛅';
+  if (weatherCode <= 48) return '🌫️';
+  if (weatherCode <= 67) return '🌧️';
+  if (weatherCode <= 77) return '❄️';
+  if (weatherCode <= 82) return '🌦️';
+  if (weatherCode <= 86) return '🌨️';
+  return '⛈️';
+}
+
 
 interface HomePageProps {
   onNavigateChat: () => void;
@@ -856,12 +842,12 @@ interface HomePageProps {
   onNavigateGiftBox?: () => void;
 }
 
-export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigateTheoremEdit, onNavigateRepository, onNavigateGiftBox }: HomePageProps) {
+export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigateTheoremEdit: _onNavigateTheoremEdit, onNavigateRepository, onNavigateGiftBox }: HomePageProps) {
   const [selectedCard, setSelectedCard] = useState<CardType>(null);
   const [latestCard, setLatestCard] = useState<JoyCard | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [pendingInsightCount, setPendingInsightCount] = useState(0);
   const [totalCardCount, setTotalCardCount] = useState(0);
+  const [weather, setWeather] = useState<{ temp: number; weatherCode: number } | null>(null);
 
   // Load latest joy card and total count
   useEffect(() => {
@@ -874,8 +860,6 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
         setTotalCardCount(response.total);
       } catch (error) {
         console.error('Failed to load latest card:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -886,7 +870,7 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
     const loadPendingInsights = async () => {
       try {
         const insights = await insightsApi.getInsights();
-        const pending = insights.filter(item => !item.is_confirmed && !item.is_rejected);
+        const pending = insights.filter((item: { is_confirmed: boolean; is_rejected: boolean }) => !item.is_confirmed && !item.is_rejected);
         setPendingInsightCount(pending.length);
       } catch (error) {
         console.error('Failed to load insights:', error);
@@ -896,17 +880,46 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
     loadPendingInsights();
   }, []);
 
+  // Fetch Pittsburgh weather
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=40.4406&longitude=-79.9959&current=temperature_2m,weather_code&temperature_unit=celsius'
+        );
+        const data = await res.json();
+        setWeather({
+          temp: Math.round(data.current.temperature_2m),
+          weatherCode: data.current.weather_code,
+        });
+      } catch (error) {
+        console.error('Failed to fetch weather:', error);
+      }
+    };
+
+    fetchWeather();
+  }, []);
+
+  const todayStr = formatDate(new Date());
+
   return (
     <div className="relative size-full" data-name="主页：快乐公式展示" style={{ backgroundImage: "linear-gradient(rgba(90, 122, 205, 0.2) 19.712%, rgba(255, 162, 162, 0.2) 44.231%, rgba(90, 156, 181, 0.2) 75.962%, rgba(254, 176, 93, 0.2) 100%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }}>
-      <Frame14 summary={latestCard?.card_summary} />
+      <Frame14 summary={latestCard?.card_summary} selectedCard={null} joyCard={latestCard} onClose={() => setSelectedCard(null)} />
       <Frame17 onNavigateChat={onNavigateChat} />
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] h-[25.276px] leading-[normal] left-[261.73px] not-italic text-[16.307px] text-black top-[142.69px] w-[102.734px] whitespace-pre-wrap">Feb 6th, 2026</p>
-      <Frame8 />
-      <div className="absolute left-[35.88px] size-[68.49px] top-[116.6px]" data-name="image 9">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage9} />
-      </div>
+      {/* Weather: emoji + temperature + unit in one row */}
+      <Frame8 temperature={weather?.temp ?? null} weatherEmoji={weather ? getWeatherEmoji(weather.weatherCode) : '⛅'} />
+      {/* Date */}
+      <p
+        className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic whitespace-nowrap"
+        style={{ left: '262px', top: '132px', fontSize: '16.307px', color: '#5a9cb5' }}
+      >{todayStr}</p>
+      {/* Subtitle */}
+      <p
+        className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] not-italic whitespace-nowrap"
+        style={{ left: '262px', top: '150px', fontSize: '8.154px', color: '#b19984' }}
+      >This is your {getOrdinal(totalCardCount)} JoyFormula.</p>
       <Frame2 />
-      
+
       {/* Clickable Cards */}
       <Frame10 onClick={() => setSelectedCard('scene')} />
       <Frame11 onClick={() => setSelectedCard('people')} />
@@ -914,13 +927,11 @@ export default function HomePage({ onNavigateChat, onNavigateTheorem, onNavigate
       <Frame13 onClick={() => setSelectedCard('senses')} />
       <Frame20 onClick={() => setSelectedCard('feeling')} />
       
-      <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[256.02px] not-italic text-[8.154px] text-black top-[163.89px] w-[140px] whitespace-pre-wrap">This is your 96th JoyFormula.</p>
-      
       {/* Theorem Card and Gift Box */}
       <TheoremCard onNavigateTheorem={onNavigateTheorem} totalCardCount={totalCardCount} pendingCount={pendingInsightCount} />
       <GiftBox onNavigateGiftBox={onNavigateGiftBox} />
       
-      <Component1 onNavigateChat={onNavigateChat} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
+      <BottomNavBar activePage="home" transparent onNavigateChat={onNavigateChat} onNavigateHome={() => {}} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} onNavigateGiftBox={onNavigateGiftBox ?? (() => {})} />
       
       {/* Card Modal */}
       <AnimatePresence>

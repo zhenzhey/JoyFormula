@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { MessageCircle, FileText, Smile, BarChart3, BatteryCharging, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import BottomNavBar from './BottomNavBar';
 import JoyrepoTitle from '../imports/Joyrepo';
 import { cardsApi } from '../api';
 import { InlineJoyCard } from './InlineJoyCard';
@@ -371,38 +372,6 @@ function Heatmap({ cards }: { cards: JoyCard[] }) {
   );
 }
 
-// Bottom Navigation Component
-interface BottomNavProps {
-  onNavigateChat: () => void;
-  onNavigateTheorem: () => void;
-  onNavigateHome: () => void;
-  onNavigateGiftBox: () => void;
-}
-
-function BottomNav({ onNavigateChat, onNavigateTheorem, onNavigateHome, onNavigateGiftBox }: BottomNavProps) {
-  return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-[84px] flex items-center justify-around px-8 z-50">
-      <button onClick={onNavigateChat} className="p-2 transition-transform hover:scale-110 active:scale-95">
-        <MessageCircle className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button onClick={onNavigateTheorem} className="p-2 transition-transform hover:scale-110 active:scale-95">
-        <FileText className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button onClick={onNavigateHome} className="p-2 transition-transform hover:scale-110 active:scale-95">
-        <Smile className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button className="p-2 transition-transform hover:scale-110 active:scale-95">
-        <BarChart3 className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button onClick={onNavigateGiftBox} className="p-2 transition-transform hover:scale-110 active:scale-95">
-        <BatteryCharging className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-
-      {/* Home Indicator */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[140px] h-[5px] bg-black rounded-full" />
-    </div>
-  );
-}
 
 
 interface NewRepositoryPageProps {
@@ -487,13 +456,7 @@ export default function NewRepositoryPage({ onNavigateChat, onNavigateTheorem, o
           </div>
         </div>
 
-        {/* Bottom Navigation */}
-        <BottomNav
-          onNavigateChat={onNavigateChat}
-          onNavigateTheorem={onNavigateTheorem}
-          onNavigateHome={onNavigateHome}
-          onNavigateGiftBox={onNavigateGiftBox}
-        />
+        <BottomNavBar activePage="repository" onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={() => {}} onNavigateGiftBox={onNavigateGiftBox} />
       </div>
 
       {/* Expanded Card Modal */}

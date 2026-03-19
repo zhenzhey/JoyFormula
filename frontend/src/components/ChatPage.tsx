@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, FileText, Smile, BarChart3, BatteryCharging as BatteryChargingIcon } from 'lucide-react';
+import BottomNavBar from './BottomNavBar';
 import svgPaths from "../imports/svg-q9e9i9q3px";
 import imgImage5 from "figma:asset/5e23b583e6ceb3250bf5714b464a5fc90e5eba62.png";
 import { chatApi } from '../api';
@@ -52,61 +52,13 @@ function Frame5() {
 
 function Frame2() {
   return (
-    <div className="absolute bg-[#eee] h-[112.519px] left-0 overflow-clip top-0 w-[393px]">
+    <div className="absolute bg-[#ffcece] h-[112.519px] left-0 overflow-clip top-0 w-[393px]">
       <p className="absolute font-['Istok_Web:Regular',sans-serif] leading-[normal] left-[158.18px] not-italic text-[12.23px] text-black top-[88.87px]">Joy Somebody</p>
       <Frame5 />
     </div>
   );
 }
 
-function Component2() {
-  return (
-    <div className="absolute bottom-[-0.1px] h-[35.78px] left-0 right-[0.27%]" data-name="4底部横条">
-      <div className="-translate-x-1/2 absolute bg-black bottom-[8.2px] h-[5.262px] left-[calc(50%-0.32px)] rounded-[105.235px] w-[141.015px]" data-name="Home Indicator" />
-    </div>
-  );
-}
-
-
-function Frame1({ onNavigateHome, onNavigateTheorem, onNavigateRepository }: { onNavigateHome: () => void; onNavigateTheorem: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute content-stretch flex gap-[38.047px] items-end left-[54.63px] top-[14.68px]">
-      <div className="relative shrink-0">
-        <MessageCircle className="w-6 h-6 text-[#FEB05D]" strokeWidth={1.5} />
-      </div>
-      <button
-        onClick={onNavigateTheorem}
-        className="relative shrink-0 transition-transform hover:scale-110 active:scale-95"
-      >
-        <FileText className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={onNavigateHome}
-        className="relative shrink-0 transition-transform hover:scale-110 active:scale-95"
-      >
-        <Smile className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={onNavigateRepository}
-        className="relative shrink-0 transition-transform hover:scale-110 active:scale-95"
-      >
-        <BarChart3 className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <div className="relative shrink-0">
-        <BatteryChargingIcon className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </div>
-    </div>
-  );
-}
-
-function Component1({ onNavigateHome, onNavigateTheorem, onNavigateRepository }: { onNavigateHome: () => void; onNavigateTheorem: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute bg-[rgba(255,255,255,0)] h-[84.797px] left-[-1.63px] top-[766.43px] w-[394.631px]" data-name="标签栏">
-      <Component2 />
-      <Frame1 onNavigateHome={onNavigateHome} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
-    </div>
-  );
-}
 
 interface InputBarProps {
   onSubmit: (text: string, isVoice: boolean) => void;
@@ -124,7 +76,7 @@ function InputBar({ onSubmit }: InputBarProps) {
   };
 
   return (
-    <div className="absolute bg-[#eee] h-[64.413px] left-0 overflow-clip top-[702.02px] w-[393px]">
+    <div className="absolute h-[64.413px] left-0 overflow-clip top-[702.02px] w-[393px]" style={{ backgroundColor: 'rgba(177,151,252,0.25)' }}>
       <div className="absolute h-[29.655px] left-[28.54px] top-[17.12px] w-[335.11px]">
         <input
           ref={inputRef}
@@ -164,9 +116,10 @@ interface ChatPageProps {
   onNavigateHome: () => void;
   onNavigateTheorem: () => void;
   onNavigateRepository: () => void;
+  onNavigateGiftBox: () => void;
 }
 
-export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigateRepository }: ChatPageProps) {
+export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigateRepository, onNavigateGiftBox }: ChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -299,9 +252,9 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
                 // AI Message - CSS bubble with auto height
                 <div className="relative mb-4" style={{ marginLeft: '10px', width: '314.726px' }}>
                   {/* Bubble Container */}
-                  <div 
-                    style={{ 
-                      backgroundColor: '#EFEFEF',
+                  <div
+                    style={{
+                      backgroundColor: 'rgba(184,233,134,0.25)',
                       borderRadius: '20px',
                       padding: '18px',
                       position: 'relative'
@@ -391,7 +344,7 @@ export default function ChatPage({ onNavigateHome, onNavigateTheorem, onNavigate
       </div>
 
       <InputBar onSubmit={handleSubmit} />
-      <Component1 onNavigateHome={onNavigateHome} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} />
+      <BottomNavBar activePage="chat" onNavigateChat={() => {}} onNavigateHome={onNavigateHome} onNavigateTheorem={onNavigateTheorem} onNavigateRepository={onNavigateRepository} onNavigateGiftBox={onNavigateGiftBox} />
     </div>
   );
 }

@@ -41,6 +41,7 @@ export default function App() {
               onNavigateHome={() => setCurrentPage('home')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateRepository={() => setCurrentPage('repository')}
+              onNavigateGiftBox={() => setCurrentPage('energySelection')}
             />
           </motion.div>
         )}
@@ -94,14 +95,15 @@ export default function App() {
             transition={{ duration: 0.4 }}
             className="absolute inset-0"
           >
-            <TheoremPage 
+            <TheoremPage
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateRepository={() => setCurrentPage('repository')}
               onNavigateHome={() => setCurrentPage('home')}
-                onEditInsight={(insight) => {
-                  setSelectedInsight(insight);
-                  setCurrentPage('theoremEdit');
-                }}
+              onNavigateGiftBox={() => setCurrentPage('energySelection')}
+              onEditInsight={(insight) => {
+                setSelectedInsight(insight);
+                setCurrentPage('theoremEdit');
+              }}
             />
           </motion.div>
         )}
@@ -116,15 +118,16 @@ export default function App() {
             transition={{ duration: 0.4 }}
             className="absolute inset-0"
           >
-            <TheoremEditPage 
-                insight={selectedInsight}
+            <TheoremEditPage
+              insight={selectedInsight}
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateRepository={() => setCurrentPage('repository')}
               onNavigateHome={() => setCurrentPage('home')}
-                onBack={() => {
-                  setCurrentPage('theorem');
-                  setSelectedInsight(undefined);
-                }}
+              onNavigateGiftBox={() => setCurrentPage('energySelection')}
+              onBack={() => {
+                setCurrentPage('theorem');
+                setSelectedInsight(undefined);
+              }}
             />
           </motion.div>
         )}
@@ -143,6 +146,8 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
+              onNavigateRepository={() => setCurrentPage('repository')}
+              onNavigateGiftBox={() => {}}
               onContinue={(level) => {
                 setEnergyLevel(level);
                 setRecommendations([]);
@@ -172,6 +177,8 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
+              onNavigateRepository={() => setCurrentPage('repository')}
+              onNavigateGiftBox={() => {}}
               onOpenComplete={() => setCurrentPage('boxReveal')}
               energyLevel={energyLevel}
             />
@@ -192,6 +199,8 @@ export default function App() {
               onNavigateChat={() => setCurrentPage('chat')}
               onNavigateTheorem={() => setCurrentPage('theorem')}
               onNavigateHome={() => setCurrentPage('home')}
+              onNavigateRepository={() => setCurrentPage('repository')}
+              onNavigateGiftBox={() => {}}
               energyLevel={energyLevel}
               recommendations={recommendations}
               isLoading={isLoadingRecommendations}

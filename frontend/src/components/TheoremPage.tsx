@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, FileText, Smile, BarChart3, BatteryCharging as BatteryChargingIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import BottomNavBar from './BottomNavBar';
 import svgPaths from "../imports/svg-svkz6eqmyl";
 import joyRepoTitle from "../assets/joyrepo.png";
 import { insightsApi, cardsApi } from '../api';
@@ -379,45 +380,6 @@ function Frame10() {
   );
 }
 
-function Component1() {
-  return (
-    <div className="absolute bottom-[-0.1px] h-[35.78px] left-0 right-[0.27%]" data-name="4底部横条">
-      <div className="-translate-x-1/2 absolute bg-black bottom-[8.2px] h-[5.262px] left-[calc(50%-0.32px)] rounded-[105.235px] w-[141.015px]" data-name="Home Indicator" />
-    </div>
-  );
-}
-
-
-function Frame7({ onNavigateChat, onNavigateHome, onNavigateRepository }: { onNavigateChat: () => void; onNavigateHome: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute content-stretch flex gap-[38.047px] items-end left-[54.63px] top-[14.68px]">
-      <button onClick={onNavigateChat} className="relative shrink-0 transition-transform hover:scale-110 active:scale-95">
-        <MessageCircle className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <div className="relative shrink-0">
-        <FileText className="w-6 h-6 text-[#FEB05D]" strokeWidth={1.5} />
-      </div>
-      <button onClick={onNavigateHome} className="relative shrink-0 transition-transform hover:scale-110 active:scale-95">
-        <Smile className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <button onClick={onNavigateRepository} className="relative shrink-0 transition-transform hover:scale-110 active:scale-95">
-        <BarChart3 className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </button>
-      <div className="relative shrink-0">
-        <BatteryChargingIcon className="w-6 h-6 text-gray-600" strokeWidth={1.5} />
-      </div>
-    </div>
-  );
-}
-
-function Component({ onNavigateChat, onNavigateHome, onNavigateRepository }: { onNavigateChat: () => void; onNavigateHome: () => void; onNavigateRepository: () => void }) {
-  return (
-    <div className="absolute bg-[rgba(255,255,255,0)] h-[84.797px] left-[-1.63px] top-[766.43px] w-[394.631px]" data-name="标签栏">
-      <Component1 />
-      <Frame7 onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateRepository={onNavigateRepository} />
-    </div>
-  );
-}
 
 function Frame1() {
   return (
@@ -473,10 +435,11 @@ interface TheoremPageProps {
   onNavigateChat: () => void;
   onNavigateHome: () => void;
   onNavigateRepository: () => void;
+  onNavigateGiftBox: () => void;
   onEditInsight?: (insight: JoyInsight) => void;
 }
 
-export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onEditInsight }: TheoremPageProps) {
+export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigateRepository, onNavigateGiftBox, onEditInsight }: TheoremPageProps) {
   const [insights, setInsights] = useState<JoyInsight[]>([]);
   const [confirmedInsights, setConfirmedInsights] = useState<JoyInsight[]>([]);
   const [totalCards, setTotalCards] = useState<number>(0);
@@ -636,7 +599,7 @@ export default function TheoremPage({ onNavigateChat, onNavigateHome, onNavigate
         </div>
       )}
       
-      <Component onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateRepository={onNavigateRepository} />
+      <BottomNavBar activePage="theorem" onNavigateChat={onNavigateChat} onNavigateHome={onNavigateHome} onNavigateTheorem={() => {}} onNavigateRepository={onNavigateRepository} onNavigateGiftBox={onNavigateGiftBox} />
       <Frame6 />
     </div>
   );
